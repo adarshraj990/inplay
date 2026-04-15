@@ -1,0 +1,36 @@
+# ── Node / Server ───────────────────────────────────────────
+node_modules/
+dist/
+*.js.map
+.env
+logs/
+uploads/
+*.tsbuildinfo
+
+# ── Flutter / Client ────────────────────────────────────────
+client/.dart_tool/
+client/.flutter-plugins
+client/.flutter-plugins-dependencies
+client/.packages
+client/build/
+client/android/.gradle/
+client/ios/Pods/
+client/ios/.symlinks/
+client/*.g.dart
+client/*.freezed.dart
+client/.env
+
+# ── Docker / Database ───────────────────────────────────────
+docker/postgres/data/
+*.dump
+
+# ── IDE ─────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Prisma ──────────────────────────────────────────────────
+server/src/infrastructure/database/prisma/migrations/
