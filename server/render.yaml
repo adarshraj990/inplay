@@ -3,8 +3,9 @@ services:
     name: indplay-backend
     env: node
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npx ts-node src/index.ts
     envVars:
       - key: NODE_ENV
         value: production
