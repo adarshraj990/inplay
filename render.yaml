@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: indplay-backend
+    name: indplay-backend-v3
     env: node
     plan: free
     rootDir: server
