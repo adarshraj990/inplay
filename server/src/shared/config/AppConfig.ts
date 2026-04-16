@@ -21,7 +21,7 @@ export class AppConfig {
 
   private constructor() {
     this.nodeEnv = process.env.NODE_ENV ?? 'development';
-    this.port = parseInt(process.env.PORT ?? '3000', 10);
+    this.port = parseInt(process.env.PORT ?? '5000', 10);
     this.mongodbUri = this.require('MONGODB_URI');
     this.redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379';
     this.redisPassword = process.env.REDIS_PASSWORD ?? '';

@@ -35,12 +35,7 @@ export function createApp(): Application {
     crossOriginEmbedderPolicy: false,
   }));
 
-  app.use(cors({
-    origin: config.corsOrigins,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
-    credentials: true,
-  }));
+  app.use(cors());
 
   // ── Performance Middlewares ──────────────────────────
   app.use(compression());
