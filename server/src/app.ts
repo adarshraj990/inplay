@@ -64,7 +64,7 @@ export function createApp(): Application {
   // ── Logging ──────────────────────────────────────────
   if (config.nodeEnv !== 'test') {
     app.use(morgan('combined', {
-      stream: { write: (message) => logger.info(message.trim()) },
+      stream: { write: (message: any) => logger.info(message.trim()) },
     }));
   }
 
