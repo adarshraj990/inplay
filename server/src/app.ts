@@ -11,6 +11,7 @@ import { Logger } from './shared/utils/Logger';
 import { AppError } from './shared/errors/AppError';
 import { swaggerSpec } from './shared/config/swagger';
 import path from 'path';
+import crypto from 'crypto';
 
 // ── Route imports ────────────────────────────────────────
 import { authRouter } from './presentation/http/routes/auth.routes';

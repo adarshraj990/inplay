@@ -85,7 +85,8 @@ export class SocialController {
       const friends = acceptedRequests.map(req => {
         const sender = req.sender as any;
         const receiver = req.receiver as any;
-        return sender.id === userId ? receiver : sender;
+        const senderId = sender._id?.toString() || sender.id;
+        return senderId === userId ? receiver : sender;
       });
 
       res.json({ success: true, data: friends });

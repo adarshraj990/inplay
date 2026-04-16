@@ -15,7 +15,7 @@ export interface ChatMessage {
 export function chatNamespace(io: SocketServer): void {
   const chat = io.of('/chat');
 
-  chat.use((socket, next) => {
+  chat.use((socket: Socket, next: (err?: Error) => void) => {
     // Namespace-level JWT is inherited from global middleware
     next();
   });

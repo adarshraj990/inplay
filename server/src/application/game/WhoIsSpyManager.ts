@@ -60,7 +60,7 @@ export class WhoIsSpyManager {
     
     // Fetch user levels from DB
     const users = await UserModel.find({ _id: { $in: userIds } });
-    const userMap = new Map<string, User>(users.map(u => [u._id.toString(), u as any]));
+    const userMap = new Map<string, User>(users.map(u => [u._id.toString(), u as unknown as User]));
 
     this.players = userIds.map((userId, index) => {
       const u = userMap.get(userId);
