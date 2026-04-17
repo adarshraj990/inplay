@@ -2,6 +2,7 @@ import { Server as SocketServer } from 'socket.io';
 import { Logger } from '../../shared/utils/Logger';
 import { RewardService } from '../services/RewardService';
 import { AgoraService } from '../services/AgoraService';
+import { WordService } from '../services/game/WordService';
 import { UserRepository } from '../../infrastructure/repositories/UserRepository';
 import { User } from '../../domain/entities/User';
 
@@ -16,22 +17,18 @@ interface Player {
   isAlive: boolean;
   level: number;
   xp: number;
+  isReady: boolean;
 }
 
-const WORD_BANK = [
-  { wordA: 'Coffee', wordB: 'Tea' },
-  { wordA: 'Marvel', wordB: 'DC' },
-  { wordA: 'Pizza', wordB: 'Burger' },
-  { wordA: 'Apple', wordB: 'Samsung' },
-  { wordA: 'Discord', wordB: 'Slack' },
-];
+const logger = Logger.getInstance();
 
 export class WhoIsSpyManager {
   private static sessions: Map<string, WhoIsSpyManager> = new Map();
+  private static readonly MAX_PLAYERS = 6;
   
   private sessionId: string;
   private players: Player[] = [];
-  private phase: GamePhase = 'REVEAL';
+  private phase: GamePhase = 'LOBBY';
   private currentSpeakerIndex: number = -1;
   private timer: number = 0;
   private io: SocketServer;
@@ -50,31 +47,111 @@ export class WhoIsSpyManager {
     return this.sessions.get(sessionId)!;
   }
 
-  public async initGame(userIds: string[]) {
-    // Reset all match state
-    this.phase = 'LOBBY';
-    const pair = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
-    const spyIndex = Math.floor(Math.random() * userIds.length);
+  public async joinLobby(userId: string): Promise<boolean> {
+    if (this.players.length >= WhoIsSpyManager.MAX_PLAYERS) return false;
+    if (this.players.find(p => p.userId === userId)) return true;
 
-    const agora = AgoraService.getInstance();
+    const userRepository = new UserRepository();
+    const user = await userRepository.findById(userId);
+
+    this.players.push({
+      userId,
+      role: 'Citizen',
+      word: '',
+      isAlive: true,
+      level: user?.level || 1,
+      xp: user?.xp || 0,
+      isReady: true, // Auto-ready for now as per simple lobby logic
+    });
+
+    this.emitState();
+
+    if (this.players.length === WhoIsSpyManager.MAX_PLAYERS && this.phase === 'LOBBY') {
+      this.startLobbyCountdown();
+    }
+
+    return true;
+  }
+
+  public leaveLobby(userId: string) {
+    this.players = this.players.filter(p => p.userId !== userId);
+    
+    // If we were counting down and someone left, reset
+    if (this.phase === 'LOBBY' && this.timer > 0) {
+      this.stopTimer();
+      this.timer = 0;
+      logger.info(`⏹️ Countdown aborted in session ${this.sessionId} - Player left.`);
+    }
+
+    this.emitState();
+  }
+
+  private startLobbyCountdown() {
+    this.timer = 10;
+    this.emitState();
+    logger.info(`⏱️ Starting game countdown for session ${this.sessionId}`);
+
+    this.startTimer(() => {
+      logger.info(`🚀 Starting match for session ${this.sessionId}`);
+      this.initGame(this.players.map(p => p.userId));
+    });
+  }
+
+  private stopTimer() {
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+  }
+
+  public async initGame(userIds: string[]) {
+    // ── 1. Determine Roles & Words ─────────────────────
+    this.phase = 'REVEAL'; // Start reveal phase immediately
+    const playerCount = userIds.length;
+    const spyCount = playerCount >= 8 ? 2 : 1;
+    
+    const wordService = WordService.getInstance();
+    const { citizenWord, spyWord } = wordService.getRandomPair();
+    
+    // Shuffle userIds to randomize role assignment
+    const shuffledIds = [...userIds].sort(() => Math.random() - 0.5);
+    const spies = shuffledIds.slice(0, spyCount);
     
     const userRepository = new UserRepository();
     const users = await userRepository.findByIds(userIds);
     const userMap = new Map<string, User>(users.map(u => [u.id.toString(), u]));
+    const agora = AgoraService.getInstance();
 
-    this.players = userIds.map((userId, index) => {
+    this.players = userIds.map((userId) => {
       const u = userMap.get(userId);
+      const isSpy = spies.includes(userId);
       return {
         userId,
-        role: index === spyIndex ? 'Spy' : 'Citizen',
-        word: index === spyIndex ? pair.wordB : pair.wordA,
+        role: isSpy ? 'Spy' : 'Citizen',
+        word: isSpy ? spyWord : citizenWord,
         isAlive: true,
         agoraToken: agora.generateRtcToken(`spy_${this.sessionId}`, userId),
         level: u?.level || 1,
         xp: u?.xp || 0,
+        isReady: true,
       };
     }) as any;
 
+    // ── 2. Secure Private Emission ──────────────────────
+    // Notify all clients to start reveal animation
+    this.io.of('/game').to(`game:whoisspy:${this.sessionId}`).emit('game:start_reveal');
+
+    // Send individual roles privately
+    this.players.forEach(player => {
+      this.io.of('/game').to(`user:${player.userId}`).emit('game:whoisspy:role_data', {
+        role: player.role,
+        word: player.word,
+        agoraToken: (player as any).agoraToken
+      });
+    });
+
+    logger.info(`🎭 Roles distributed for session ${this.sessionId}: ${spyCount} spy(ies) assigned.`);
+    
     this.startRevealPhase();
   }
 

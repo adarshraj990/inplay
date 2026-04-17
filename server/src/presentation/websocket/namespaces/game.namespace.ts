@@ -26,12 +26,29 @@ export function gameNamespace(io: SocketServer): void {
     const userId = (socket as any).userId as string;
     logger.debug(`🎮 [Game] User ${userId} connected`);
 
-    // ── Join game session ──────────────────────────────
-    socket.on('session:join', ({ sessionId, gameType }: { sessionId: string; gameType: string }) => {
-      const room = `game:${gameType}:${sessionId}`;
-      socket.join(room);
-      game.to(room).emit('game:player_joined', { userId, sessionId, gameType });
-      logger.debug(`🎮 User ${userId} joined game session ${room}`);
+    // Ensure user is in their personal room within this namespace for private events
+    socket.join(`user:${userId}`);
+
+    // ── Join game lobby (WhoIsSpy specific) ────────────────
+    socket.on('lobby:join', async ({ sessionId }: { sessionId: string }) => {
+      const room = `game:whoisspy:${sessionId}`;
+      const manager = WhoIsSpyManager.getOrCreate(sessionId, io);
+      
+      const joined = await manager.joinLobby(userId);
+      if (joined) {
+        socket.join(room);
+        logger.debug(`🎮 User ${userId} joined lobby ${room}`);
+      } else {
+        socket.emit('error', { message: 'ROOM_FULL', code: 403 });
+      }
+    });
+
+    // ── Leave lobby ─────────────────────────────────────
+    socket.on('lobby:leave', ({ sessionId }: { sessionId: string }) => {
+      const room = `game:whoisspy:${sessionId}`;
+      const manager = WhoIsSpyManager.getOrCreate(sessionId, io);
+      manager.leaveLobby(userId);
+      socket.leave(room);
     });
 
     // ── Player action (agnostic — each mini-game defines its payload) ──
