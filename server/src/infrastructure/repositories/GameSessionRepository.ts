@@ -5,7 +5,7 @@ export class GameSessionRepository {
   private prisma: PrismaClient;
 
   constructor() {
-    this.prisma = DatabaseService.getInstance().getClient();
+    this.prisma = DatabaseService.getInstance().client;
   }
 
   public async updateStatus(sessionId: string, status: string, state: any): Promise<void> {

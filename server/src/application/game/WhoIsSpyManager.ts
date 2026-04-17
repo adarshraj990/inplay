@@ -20,9 +20,8 @@ interface Player {
   xp: number;
   isReady: boolean;
   isOnline: boolean;
+  agoraToken?: string;
 }
-
-const logger = Logger.getInstance();
 
 export class WhoIsSpyManager {
   private static sessions: Map<string, WhoIsSpyManager> = new Map();
@@ -147,7 +146,6 @@ export class WhoIsSpyManager {
     const userRepository = new UserRepository();
     const users = await userRepository.findByIds(userIds);
     const userMap = new Map<string, User>(users.map(u => [u.id.toString(), u]));
-    const agora = AgoraService.getInstance();
 
     this.players = userIds.map((userId) => {
       const u = userMap.get(userId);
@@ -157,7 +155,7 @@ export class WhoIsSpyManager {
         role: isSpy ? 'Spy' : 'Citizen',
         word: isSpy ? spyWord : citizenWord,
         isAlive: true,
-        agoraToken: agora.generateRtcToken(`spy_${this.sessionId}`, userId),
+        agoraToken: AgoraService.getInstance().generateRtcToken(`spy_${this.sessionId}`, userId),
         level: u?.level || 1,
         xp: u?.xp || 0,
         isReady: true,
@@ -381,14 +379,18 @@ export class WhoIsSpyManager {
     this.votes = {};
     this.currentSpeakerIndex = -1;
     // Keep players in the list but reset their match-specific state
-    this.players = this.players.map(p => ({
-      userId: p.userId,
-      role: 'Citizen',
-      word: '',
-      isAlive: true,
-      level: p.level,
-      xp: p.xp
-    }));
+    this.players = [
+      ...this.players.map(p => ({
+        userId: p.userId,
+        role: 'Citizen' as const,
+        word: 'Normal Word',
+        isAlive: true,
+        level: p.level || 5,
+        xp: p.xp || 120,
+        isReady: true,
+        isOnline: true
+      }))
+    ];
     this.emitState();
     logger.info(`🔄 Session ${this.sessionId} reset to LOBBY automatically.`);
   }
