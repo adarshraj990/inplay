@@ -8,6 +8,8 @@ import { View, ActivityIndicator } from 'react-native';
 import BottomTabNavigator from './navigation/BottomTabNavigator';
 import AuthNavigator from './navigation/AuthNavigator';
 import WhoIsSpyRoomScreen from './screens/WhoIsSpyRoomScreen';
+import SpyLobby from './screens/game/SpyLobby';
+import RoleAssignment from './screens/game/RoleAssignment';
 import { EmoteProvider } from './context/EmoteContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Colors } from './constants/theme';
@@ -32,6 +34,8 @@ function RootNavigator() {
       ) : (
         <>
           <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
+          <Stack.Screen name="SpyLobby" component={SpyLobby} />
+          <Stack.Screen name="RoleAssignment" component={RoleAssignment} />
           <Stack.Screen name="WhoIsSpyRoom" component={WhoIsSpyRoomScreen} />
         </>
       )}
