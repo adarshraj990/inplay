@@ -55,7 +55,7 @@ model User {
   username       String     @unique @db.VarChar(30)
   email          String     @unique
   passwordHash   String
-  displayName    String     @db.VarChar(50)
+  displayName    String?    @db.VarChar(50)
   avatarUrl      String?
   bio            String?    @db.VarChar(300)
   status         UserStatus @default(OFFLINE)

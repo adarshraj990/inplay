@@ -46,16 +46,27 @@ export class UserRepository implements IUserRepository {
   }
 
   async create(data: CreateUserDTO): Promise<User> {
-    const user = await this.prisma.user.create({
-      data: {
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          username: data.username,
+          email: data.email,
+          passwordHash: data.passwordHash,
+          displayName: data.displayName,
+          gameUid: data.gameUid,
+        },
+      });
+      return this.mapToDomain(user);
+    } catch (error) {
+      console.error('[UserRepository.create Error]: Failed to create user.');
+      console.error('[UserRepository.create Data]:', JSON.stringify({
         username: data.username,
         email: data.email,
-        passwordHash: data.passwordHash,
         displayName: data.displayName,
-        gameUid: data.gameUid,
-      },
-    });
-    return this.mapToDomain(user);
+        gameUid: data.gameUid
+      }, null, 2));
+      throw error;
+    }
   }
 
   async update(id: string, data: UpdateUserDTO): Promise<User> {

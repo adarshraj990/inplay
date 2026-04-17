@@ -33,7 +33,7 @@ export class AuthService {
         username: data.username,
         email: data.email,
         passwordHash,
-        displayName: data.displayName,
+        displayName: data.displayName || data.username,
         gameUid,
       });
 
