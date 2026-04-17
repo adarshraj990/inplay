@@ -113,4 +113,13 @@ export class UserController {
       next(e);
     }
   };
+
+  getOnlineUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const users = await this.userRepository.findOnlineUsers();
+      res.json({ success: true, data: users });
+    } catch (e) {
+      next(e);
+    }
+  };
 }

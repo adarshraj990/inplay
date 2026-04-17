@@ -115,6 +115,30 @@ export class UserRepository implements IUserRepository {
     }));
   }
 
+  async findOnlineUsers(limit = 20): Promise<UserPublicProfile[]> {
+    const users = await this.prisma.user.findMany({
+      where: {
+        status: 'ONLINE',
+      },
+      take: limit,
+      select: {
+        id: true,
+        gameUid: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        bio: true,
+        status: true,
+        level: true,
+      },
+    });
+    
+    return users.map(u => ({
+      ...u,
+      status: u.status as UserStatus,
+    }));
+  }
+
   async addXp(id: string, amount: number): Promise<User> {
     const user = await this.prisma.user.update({
       where: { id },

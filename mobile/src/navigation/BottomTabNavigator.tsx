@@ -22,18 +22,12 @@ const TAB_ICONS: Record<TabRoute, { active: keyof typeof Ionicons.glyphMap; inac
   Profile: { active: 'person-circle',     inactive: 'person-circle-outline'},
 };
 
-// Unread badge for Chats
-const UNREAD: Partial<Record<TabRoute, number>> = { Chats: 4 };
-
-interface TabIconProps {
-  route: TabRoute;
-  focused: boolean;
-  color: string;
-}
+import { useNotificationStats } from '../hooks/useNotificationStats';
 
 const TabIcon: React.FC<TabIconProps> = ({ route, focused, color }) => {
   const icons = TAB_ICONS[route];
-  const badge = UNREAD[route];
+  const unreadCount = useNotificationStats();
+  const badge = route === 'Chats' ? unreadCount : 0;
 
   return (
     <View style={tabIconStyles.wrap}>

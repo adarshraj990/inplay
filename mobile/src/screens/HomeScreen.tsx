@@ -11,6 +11,7 @@ import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { CONFIG } from '../config';
 import apiService from '../services/apiService';
 import { useAuth } from '../context/AuthContext';
+import OnlineUsersModal from '../components/modals/OnlineUsersModal';
 import GameCard from '../components/GameCard';
 import CreateRoomButton from '../components/CreateRoomButton';
 import ActiveRoomCard from '../components/ActiveRoomCard';
@@ -25,6 +26,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [profile, setProfile] = useState<any>(user);
   const [stats, setStats] = useState({ onlineCount: 0, activeRoomsCount: 0 });
   const [rooms, setRooms] = useState<any[]>([]);
+  const [onlineModalVisible, setOnlineModalVisible] = useState(false);
 
   // ── Data Fetching ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -101,7 +103,9 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           <Text style={styles.heroSub}>Ready to play? Pick a game or jump into a room.</Text>
 
           <View style={styles.statsRow}>
-            <StatChip icon="people" value={stats.onlineCount.toString()} label="Online" color={Colors.online} />
+            <TouchableOpacity style={{ flex: 1 }} onPress={() => setOnlineModalVisible(true)}>
+              <StatChip icon="people" value={stats.onlineCount.toString()} label="Online" color={Colors.online} />
+            </TouchableOpacity>
             <StatChip icon="game-controller" value={stats.activeRoomsCount.toString()} label="Active Rooms" color={Colors.turquoise} />
             <StatChip icon="trophy" value={`#${profile?.rank || '??'}`} label="Your Rank" color={Colors.saffron} />
           </View>
@@ -153,6 +157,11 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
         <View style={{ height: Spacing.xxl }} />
       </Animated.ScrollView>
+
+      <OnlineUsersModal 
+        visible={onlineModalVisible} 
+        onClose={() => setOnlineModalVisible(false)} 
+      />
     </SafeAreaView>
   );
 };

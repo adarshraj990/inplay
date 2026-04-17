@@ -23,6 +23,7 @@ enum UserStatus {
 enum FriendshipStatus {
   PENDING
   ACCEPTED
+  REJECTED
   BLOCKED
 }
 

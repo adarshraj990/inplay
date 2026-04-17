@@ -99,6 +99,31 @@ export class SocialController {
       next(e);
     }
   };
+  getNotificationStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = (req as AuthenticatedRequest).userId;
+
+      const [pendingRequests, unreadNotifications] = await Promise.all([
+        this.prisma.friendship.count({
+          where: { addresseeId: userId, status: 'PENDING' }
+        }),
+        this.prisma.notification.count({
+          where: { userId, isRead: false }
+        })
+      ]);
+
+      res.json({
+        success: true,
+        data: {
+          total: pendingRequests + unreadNotifications,
+          pendingRequests,
+          unreadNotifications
+        }
+      });
+    } catch (e) {
+      next(e);
+    }
+  };
 
   // ── Messages ─────────────────────────────────────────────────────────────
 

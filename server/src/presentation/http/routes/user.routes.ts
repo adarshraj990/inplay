@@ -17,5 +17,6 @@ userRouter.post('/me/daily-reward', controller.claimDailyReward);
 userRouter.delete('/me', controller.deleteAccount);
 
 userRouter.get('/search', controller.searchUsers);
+userRouter.get('/online', controller.getOnlineUsers);
 userRouter.get('/:id', controller.getUserById);
 userRouter.get('/:id/stats', controller.getUserStats);
