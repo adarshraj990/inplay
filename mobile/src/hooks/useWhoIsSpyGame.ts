@@ -17,6 +17,7 @@ interface GameState {
   myWord: string;
   agoraToken: string | null;
   channelName: string | null;
+  voteStats: { count: number; total: number } | null;
 }
 
 export const useWhoIsSpyGame = (sessionId: string, userId: string) => {
@@ -30,6 +31,7 @@ export const useWhoIsSpyGame = (sessionId: string, userId: string) => {
     myWord: '',
     agoraToken: null,
     channelName: null,
+    voteStats: null,
   });
 
   const socketRef = useRef<Socket | null>(null);
@@ -58,7 +60,20 @@ export const useWhoIsSpyGame = (sessionId: string, userId: string) => {
         myWord: data.phase === 'LOBBY' ? '' : prev.myWord,
         winner: data.phase === 'LOBBY' ? null : prev.winner,
         channelName: data.channelName || prev.channelName,
+        voteStats: data.phase === 'VOTING' ? prev.voteStats : null,
       }));
+    });
+
+    socket.on('game:start_reveal', () => {
+      setState(prev => ({ ...prev, phase: 'REVEAL' }));
+    });
+
+    socket.on('turn:update', (data: { userId: string, timer: number }) => {
+      setState(prev => ({ ...prev, currentSpeakerId: data.userId, timer: data.timer }));
+    });
+
+    socket.on('game:vote_cast', (data: { count: number, total: number }) => {
+      setState(prev => ({ ...prev, voteStats: data }));
     });
 
     socket.on('game:whoisspy:role_data', (data: { role: 'Citizen' | 'Spy', word: string, agoraToken?: string }) => {
@@ -81,6 +96,9 @@ export const useWhoIsSpyGame = (sessionId: string, userId: string) => {
         socket.off('game:sync');
         socket.off('game:whoisspy:role_data');
         socket.off('game:game_over');
+        socket.off('game:start_reveal');
+        socket.off('turn:update');
+        socket.off('game:vote_cast');
         socket.disconnect();
       }
       socketRef.current = null;

@@ -17,46 +17,26 @@ import Animated, {
   Extrapolate
 } from 'react-native-reanimated';
 
+import { useWhoIsSpyGame } from '../../hooks/useWhoIsSpyGame';
+
 const { width } = Dimensions.get('window');
 
-// ── Mock Data ──────────────────────────────────────────────────────────────
+// ── Mock Visuals (Will be replaced by real avatars later) ───────────────────
 const ICONS = ['logo-octocat', 'rocket', 'flask', 'planet', 'construct', 'bulb'];
-const USERS = ['Cipher', 'Nova', 'Echo', 'Vortex', 'Quark', 'Nexus'];
 
 const SpyLobby: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const [readyCount, setReadyCount] = useState(0);
-  const [countdown, setCountdown] = useState(10);
-  const [isGameStarting, setIsGameStarting] = useState(false);
+  const { phase, timer, players } = useWhoIsSpyGame('SPY99', '1'); // Session ID #SPY99
+  
+  const readyCount = players.length;
+  const countdown = timer;
+  const isGameStarting = phase === 'LOBBY' && readyCount === 6 && countdown > 0;
 
-  // Simulation: Players joining/readying up
+  // Transition to Role Assignment automatically
   useEffect(() => {
-    const timer = setInterval(() => {
-      setReadyCount(prev => {
-        if (prev < 6) return prev + 1;
-        clearInterval(timer);
-        return prev;
-      });
-    }, 1200);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Countdown logic
-  useEffect(() => {
-    if (readyCount === 6) {
-      setIsGameStarting(true);
-      const timer = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            navigation.replace('RoleAssignment');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
+    if (phase === 'REVEAL') {
+      navigation.replace('RoleAssignment');
     }
-  }, [readyCount, navigation]);
+  }, [phase, navigation]);
 
   return (
     <SafeAreaView style={styles.container}>

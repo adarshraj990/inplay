@@ -37,15 +37,13 @@ interface Player {
   isEliminated?: boolean;
 }
 
-const MOCK_PLAYERS: Player[] = [
-  { id: '1', name: 'Host (You)', avatar: 'https://i.pravatar.cc/150?u=1', isHost: true },
-  { id: '2', name: 'Riya', avatar: 'https://i.pravatar.cc/150?u=2', isHost: false },
-  { id: '3', name: 'Krish', avatar: 'https://i.pravatar.cc/150?u=3', isHost: false },
-  { id: '4', name: 'Zoya', avatar: 'https://i.pravatar.cc/150?u=4', isHost: false },
-  { id: '5', name: 'Aryan', avatar: 'https://i.pravatar.cc/150?u=5', isHost: false },
-  { id: '6', name: 'Ishani', avatar: 'https://i.pravatar.cc/150?u=6', isHost: false },
-  { id: '7', name: 'Kabir', avatar: 'https://i.pravatar.cc/150?u=7', isHost: false },
-  { id: '8', name: 'Mira', avatar: 'https://i.pravatar.cc/150?u=8', isHost: false },
+const AVATARS = [
+  'https://i.pravatar.cc/150?u=1',
+  'https://i.pravatar.cc/150?u=2',
+  'https://i.pravatar.cc/150?u=3',
+  'https://i.pravatar.cc/150?u=4',
+  'https://i.pravatar.cc/150?u=5',
+  'https://i.pravatar.cc/150?u=6',
 ];
 
 const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -115,7 +113,13 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         <View style={styles.main}>
           {phase === 'VOTING' ? (
             <VotingPhase 
-              players={MOCK_PLAYERS.map(p => ({ ...p, isEliminated: livePlayers.find(lp => lp.userId === p.id)?.isAlive === false }))} 
+              players={livePlayers.map((p, idx) => ({ 
+                id: p.userId, 
+                name: p.userId === '1' ? 'You' : `Player ${idx + 1}`,
+                avatar: AVATARS[idx % AVATARS.length],
+                isHost: idx === 0,
+                isEliminated: !p.isAlive
+              }))} 
               myId="1" 
               onVote={handleVote} 
             />
@@ -137,24 +141,25 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
               {/* ── Player List ── */}
               <View style={styles.playersSection}>
                 <Text style={styles.sectionTitle}>
-                  {phase === 'LOBBY' ? 'Waiting for Players' : 'Participants'} ({livePlayers.length || MOCK_PLAYERS.length}/8)
+                  {phase === 'LOBBY' ? 'Waiting for Players' : 'Participants'} ({livePlayers.length}/6)
                 </Text>
                 <View style={styles.playerGrid}>
-                  {MOCK_PLAYERS.map(player => {
-                    const liveData = livePlayers.find(p => p.userId === player.id);
-                    const isAlive = liveData ? liveData.isAlive : true;
-                    const isSpeaking = currentSpeakerId === player.id;
+                  {livePlayers.map((player, idx) => {
+                    const isAlive = player.isAlive;
+                    const isSpeaking = currentSpeakerId === player.userId;
+                    const name = `Player ${idx + 1}`; 
 
                     return (
                       <TouchableOpacity 
-                        key={player.id} 
+                        key={player.userId} 
                         style={[styles.playerItem, !isAlive && styles.eliminated]}
                         onPress={() => {
-                          const live = livePlayers.find(p => p.userId === player.id);
                           setSelectedPlayer({ 
-                            ...player, 
-                            level: live?.level, 
-                            xp: live?.xp 
+                            id: player.userId,
+                            name, 
+                            avatar: AVATARS[idx % AVATARS.length],
+                            level: player.level, 
+                            xp: player.xp 
                           });
                           setProfileVisible(true);
                         }}
@@ -162,18 +167,18 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                         <View style={[styles.avatarWrapper, isSpeaking && styles.speakingAvatar]}>
                           {isSpeaking && <SpeakingRipple />}
                           <PlayerAvatarWithEmote 
-                            userId={player.id}
-                            avatarUrl={player.avatar}
-                            isHost={player.isHost}
+                            userId={player.userId}
+                            avatarUrl={AVATARS[idx % AVATARS.length]}
+                            isHost={idx === 0}
                           />
                         </View>
                         <View style={styles.nameRow}>
                           <Text style={[styles.playerName, isSpeaking && styles.speakingName]}>
-                            {player.name}
+                            {player.userId === '1' ? 'You' : name}
                           </Text>
-                          {liveData?.level && (
+                          {player.level && (
                             <View style={styles.inlineLevel}>
-                              <Text style={styles.inlineLevelText}>L{liveData.level}</Text>
+                              <Text style={styles.inlineLevelText}>L{player.level}</Text>
                             </View>
                           )}
                         </View>
