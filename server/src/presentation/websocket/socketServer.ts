@@ -35,12 +35,15 @@ export function createSocketServer(httpServer: HttpServer): SocketServer {
     const userId = (socket as any).userId as string;
     logger.info(`🔌 User connected: ${userId} [${socket.id}]`);
 
-    // Track presence
-    const redis = RedisService.getInstance();
-    await redis.setOnline(userId);
-    socket.join(`user:${userId}`); // personal room
+    // Protective delay to ensure RedisService has initialized fallback/connection
+    setTimeout(async () => {
+      const redis = RedisService.getInstance();
+      await redis.setOnline(userId);
+      socket.join(`user:${userId}`); // personal room
+    }, 100);
 
     socket.on('disconnect', async (reason) => {
+      const redis = RedisService.getInstance();
       await redis.setOffline(userId);
       logger.info(`🔌 User disconnected: ${userId} — ${reason}`);
       io.emit('user:offline', { userId });

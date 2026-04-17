@@ -13,6 +13,10 @@ export class RedisService {
   private publisher: RedisClientType | null = null;
   public isConnected = false;
 
+  // ── Memory Fallback Stores ──────────────────────────
+  private memoryStore = new Map<string, string>();
+  private onlineUsersSet = new Set<string>();
+
   private constructor() {}
 
   static getInstance(): RedisService {
@@ -23,6 +27,12 @@ export class RedisService {
   }
 
   async connect(): Promise<void> {
+    if (!config.redisUrl) {
+      logger.info('ℹ️ Redis URL not provided. Using Memory Fallback Mode.');
+      this.isConnected = false;
+      return;
+    }
+
     try {
       const redisConfig = {
         url: config.redisUrl,
@@ -47,8 +57,9 @@ export class RedisService {
       ]);
       
       this.isConnected = true;
+      logger.info('✅ Redis Connected (Ready for Pub/Sub and Caching)');
     } catch (error) {
-      logger.warn('⚠️  Redis connection failed or timed out. Features relying on Redis (Sockets, caching) will be disabled. Proceeding gracefully...');
+      logger.warn('⚠️  Redis connection failed or timed out. Falling back to Local Memory for social engine.');
       this.isConnected = false;
       this.client = null;
       this.subscriber = null;
@@ -68,40 +79,59 @@ export class RedisService {
 
   // ── Cache helpers ────────────────────────────────────
   async get<T>(key: string): Promise<T | null> {
-    if (!this.isConnected || !this.client) return null;
-    const data = await this.client.get(key);
+    if (this.isConnected && this.client) {
+      const data = await this.client.get(key);
+      return data ? (JSON.parse(data) as T) : null;
+    }
+    // Fallback
+    const data = this.memoryStore.get(key);
     return data ? (JSON.parse(data) as T) : null;
   }
 
   async set(key: string, value: unknown, ttlSeconds?: number): Promise<void> {
-    if (!this.isConnected || !this.client) return;
     const serialized = JSON.stringify(value);
+    if (this.isConnected && this.client) {
+      if (ttlSeconds) {
+        await this.client.setEx(key, ttlSeconds, serialized);
+      } else {
+        await this.client.set(key, serialized);
+      }
+      return;
+    }
+    // Fallback
+    this.memoryStore.set(key, serialized);
     if (ttlSeconds) {
-      await this.client.setEx(key, ttlSeconds, serialized);
-    } else {
-      await this.client.set(key, serialized);
+      setTimeout(() => this.memoryStore.delete(key), ttlSeconds * 1000);
     }
   }
 
   async del(key: string): Promise<void> {
-    if (!this.isConnected || !this.client) return;
-    await this.client.del(key);
+    if (this.isConnected && this.client) {
+      await this.client.del(key);
+      return;
+    }
+    this.memoryStore.delete(key);
   }
 
   async exists(key: string): Promise<boolean> {
-    if (!this.isConnected || !this.client) return false;
-    return (await this.client.exists(key)) === 1;
+    if (this.isConnected && this.client) {
+      return (await this.client.exists(key)) === 1;
+    }
+    return this.memoryStore.has(key);
   }
 
   // ── Pub/Sub for real-time events ─────────────────────
   async publish(channel: string, message: unknown): Promise<void> {
-    if (!this.isConnected || !this.publisher) return;
-    await this.publisher.publish(channel, JSON.stringify(message));
+    if (this.isConnected && this.publisher) {
+      await this.publisher.publish(channel, JSON.stringify(message));
+    }
+    // Note: Local Pub/Sub could be added with EventEmitter if multi-modular
   }
 
   async subscribe(channel: string, callback: (message: string) => void): Promise<void> {
-    if (!this.isConnected || !this.subscriber) return;
-    await this.subscriber.subscribe(channel, callback);
+    if (this.isConnected && this.subscriber) {
+      await this.subscriber.subscribe(channel, callback);
+    }
   }
 
   // ── Session helpers ──────────────────────────────────
@@ -119,23 +149,33 @@ export class RedisService {
 
   // ── Online presence tracking ─────────────────────────
   async setOnline(userId: string): Promise<void> {
-    if (!this.isConnected || !this.client) return;
-    await this.client.sAdd('online_users', userId);
-    await this.client.expire('online_users', 3600);
+    if (this.isConnected && this.client) {
+      await this.client.sAdd('online_users', userId);
+      await this.client.expire('online_users', 3600);
+      return;
+    }
+    this.onlineUsersSet.add(userId);
   }
 
   async setOffline(userId: string): Promise<void> {
-    if (!this.isConnected || !this.client) return;
-    await this.client.sRem('online_users', userId);
+    if (this.isConnected && this.client) {
+      await this.client.sRem('online_users', userId);
+      return;
+    }
+    this.onlineUsersSet.delete(userId);
   }
 
   async getOnlineUsers(): Promise<string[]> {
-    if (!this.isConnected || !this.client) return [];
-    return this.client.sMembers('online_users');
+    if (this.isConnected && this.client) {
+      return this.client.sMembers('online_users');
+    }
+    return Array.from(this.onlineUsersSet);
   }
 
   async isOnline(userId: string): Promise<boolean> {
-    if (!this.isConnected || !this.client) return false;
-    return this.client.sIsMember('online_users', userId);
+    if (this.isConnected && this.client) {
+      return this.client.sIsMember('online_users', userId);
+    }
+    return this.onlineUsersSet.has(userId);
   }
 }
