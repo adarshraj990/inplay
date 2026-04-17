@@ -73,12 +73,17 @@ export function createApp(): Application {
   });
 
   // ── Health Check ─────────────────────────────────────
-  app.get('/health', (_req: Request, res: Response) => {
+  app.get('/health', async (_req: Request, res: Response) => {
+    const config = AppConfig.getInstance();
+    const db = require('./infrastructure/database/DatabaseService').DatabaseService.getInstance();
+    const isDbConnected = db.isConnected;
+
     res.json({
-      status: 'healthy',
+      status: 'ok',
+      database: isDbConnected ? 'connected' : 'disconnected',
       timestamp: new Date().toISOString(),
       env: config.nodeEnv,
-      version: process.env.npm_package_version,
+      version: process.env.npm_package_version || '1.0.0',
     });
   });
 
