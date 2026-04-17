@@ -16,37 +16,47 @@ export class AuthService {
   }
 
   async register(data: RegisterDTO): Promise<AuthResponseDTO> {
-    const existingEmail = await this.userRepository.findByEmail(data.email);
-    if (existingEmail) throw new ConflictError('Email already in use');
+    try {
+      const existingEmail = await this.userRepository.findByEmail(data.email);
+      if (existingEmail) throw new ConflictError('Email already in use');
 
-    const existingUsername = await this.userRepository.findByUsername(data.username);
-    if (existingUsername) throw new ConflictError('Username already taken');
+      const existingUsername = await this.userRepository.findByUsername(data.username);
+      if (existingUsername) throw new ConflictError('Username already taken');
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(data.password, salt);
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(data.password, salt);
 
-    // Generate unique 8-digit UID
-    const gameUid = await this.generateUniqueGameUid();
+      // Generate unique 8-digit UID
+      const gameUid = await this.generateUniqueGameUid();
 
-    const user = await this.userRepository.create({
-      username: data.username,
-      email: data.email,
-      passwordHash,
-      displayName: data.displayName,
-      gameUid,
-    });
+      const user = await this.userRepository.create({
+        username: data.username,
+        email: data.email,
+        passwordHash,
+        displayName: data.displayName,
+        gameUid,
+      });
 
-    return this.generateAuthResponse(user);
+      return this.generateAuthResponse(user);
+    } catch (error) {
+      console.error('[AuthService.register Error]:', error);
+      throw error;
+    }
   }
 
   async login(data: LoginDTO): Promise<AuthResponseDTO> {
-    const user = await this.userRepository.findByEmail(data.email);
-    if (!user) throw new UnauthorizedError('Invalid credentials');
+    try {
+      const user = await this.userRepository.findByEmail(data.email);
+      if (!user) throw new UnauthorizedError('Invalid credentials');
 
-    const isMatch = await bcrypt.compare(data.password, user.passwordHash);
-    if (!isMatch) throw new UnauthorizedError('Invalid credentials');
+      const isMatch = await bcrypt.compare(data.password, user.passwordHash);
+      if (!isMatch) throw new UnauthorizedError('Invalid credentials');
 
-    return this.generateAuthResponse(user);
+      return this.generateAuthResponse(user);
+    } catch (error) {
+      console.error('[AuthService.login Error]:', error);
+      throw error;
+    }
   }
 
   async refreshTokens(refreshToken: string): Promise<AuthResponseDTO> {
