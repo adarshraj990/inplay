@@ -4,7 +4,9 @@ import { DatabaseService } from '../../../infrastructure/database/DatabaseServic
 import { AuthenticatedRequest } from '../middlewares/authenticate';
 
 export class SocialController {
-  private prisma = DatabaseService.getInstance().client;
+  private get prisma() {
+    return DatabaseService.getInstance().client;
+  }
 
   // ── Friends ──────────────────────────────────────────────────────────────
 

@@ -4,11 +4,11 @@ import { IUserRepository, CreateUserDTO, UpdateUserDTO } from '../../domain/repo
 import { User, UserPublicProfile, UserStatus } from '../../domain/entities/User';
 
 export class UserRepository implements IUserRepository {
-  private prisma: PrismaClient;
-
-  constructor() {
-    this.prisma = DatabaseService.getInstance().client;
+  private get prisma() {
+    return DatabaseService.getInstance().client;
   }
+
+  constructor() {}
 
   async findById(id: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
