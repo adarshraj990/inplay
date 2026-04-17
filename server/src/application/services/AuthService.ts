@@ -104,7 +104,7 @@ export class AuthService {
     };
 
     return {
-      auth_token: accessToken,
+      token: accessToken,
       refreshToken,
       user: publicProfile,
     };

@@ -23,7 +23,7 @@ export const RefreshTokenDTOSchema = z.object({
 export type RefreshTokenDTO = z.infer<typeof RefreshTokenDTOSchema>;
 
 export interface AuthResponseDTO {
-  auth_token: string;
+  token: string;
   refreshToken: string;
   user: any; // UserPublicProfile
 }
