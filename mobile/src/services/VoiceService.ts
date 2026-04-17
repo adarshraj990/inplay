@@ -7,8 +7,8 @@ import createAgoraRtcEngine, {
 } from 'react-native-agora';
 import { Platform, PermissionsAndroid } from 'react-native';
 
-// Note: Replace with your actual Agora App ID in production
-const AGORA_APP_ID = 'd4a3ee9b40a04436a1bc8743190a4183';
+// Note: Pulled from .env file (EXPO_PUBLIC_AGORA_APP_ID)
+const AGORA_APP_ID = process.env.EXPO_PUBLIC_AGORA_APP_ID || '';
 
 export class VoiceService {
   private static instance: VoiceService;

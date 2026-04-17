@@ -23,6 +23,7 @@ import PlayerAvatarWithEmote from '../components/PlayerAvatarWithEmote';
 import EmoteTray from '../components/EmoteTray';
 import PlayerProfileModal from '../components/game/PlayerProfileModal';
 import { useWhoIsSpyGame } from '../hooks/useWhoIsSpyGame';
+import { useAgoraVoice } from '../hooks/useAgoraVoice';
 import { CONFIG } from '../config';
 import * as Haptics from 'expo-haptics';
 
@@ -55,9 +56,15 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     winner, 
     myRole, 
     myWord,
+    agoraToken,
+    channelName,
     startGame: triggerStart,
-    castVote: triggerVote
+    castVote: triggerVote,
+    skipTurn: triggerSkip
   } = useWhoIsSpyGame('SPY99', '1'); // Mock session/user ID
+
+  // ── Integrate Turn-Based Voice ──────────────────────
+  useAgoraVoice('1', agoraToken, channelName, phase, currentSpeakerId);
 
   const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
   const [profileVisible, setProfileVisible] = useState(false);
@@ -65,17 +72,19 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [isHost] = useState(true);
 
   const startGame = useCallback(() => {
-    triggerStart(MOCK_PLAYERS.map(p => p.id));
-  }, [triggerStart]);
+    // Collect all valid player IDs from live players
+    const userIds = livePlayers.map(p => p.userId);
+    triggerStart(userIds);
+  }, [triggerStart, livePlayers]);
 
   const handleVote = (targetId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     triggerVote(targetId);
   };
 
-  const {
-    skipTurn
-  } = useWhoIsSpyGame('SPY99', '1');
+  const skipTurn = useCallback(() => {
+    triggerSkip();
+  }, [triggerSkip]);
 
   const resetGame = useCallback(() => {
     // If we want to stay in lobby instead of leaving
@@ -171,6 +180,11 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                             avatarUrl={AVATARS[idx % AVATARS.length]}
                             isHost={idx === 0}
                           />
+                          {isSpeaking && (
+                            <View style={styles.micIconContainer}>
+                              <Ionicons name="mic" size={12} color="white" />
+                            </View>
+                          )}
                         </View>
                         <View style={styles.nameRow}>
                           <Text style={[styles.playerName, isSpeaking && styles.speakingName]}>
@@ -301,6 +315,19 @@ const styles = StyleSheet.create({
   speakingAvatar: { backgroundColor: Colors.turquoise, elevation: 10, shadowColor: Colors.turquoise, shadowOpacity: 0.5, shadowRadius: 10 },
   speakingBadge: { position: 'absolute', bottom: -12, backgroundColor: Colors.turquoise, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   speakingBadgeText: { color: Colors.background, fontSize: 8, fontWeight: '900' },
+  micIconContainer: {
+    position: 'absolute',
+    top: -2,
+    left: -2,
+    backgroundColor: Colors.turquoise,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.background
+  },
   
   timerBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'rgba(0, 212, 200, 0.1)', paddingVertical: 8, marginBottom: Spacing.md },
   timerText: { color: Colors.turquoise, fontWeight: '700', fontSize: 14 },

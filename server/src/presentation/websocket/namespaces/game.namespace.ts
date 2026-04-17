@@ -114,6 +114,14 @@ export function gameNamespace(io: SocketServer): void {
       }
     });
 
+    socket.on('game:whoisspy:request_voice_token', ({ sessionId }: { sessionId: string }) => {
+      const manager = WhoIsSpyManager.getOrCreate(sessionId, io);
+      const token = manager.getPlayerToken(userId);
+      if (token) {
+        socket.emit('game:whoisspy:voice_token', { token, channelName: `spy_${sessionId}` });
+      }
+    });
+
     socket.on('game:whoisspy:skip_turn', ({ sessionId }: { sessionId: string }) => {
       const manager = WhoIsSpyManager.getOrCreate(sessionId, io);
       manager.skipTurn(userId);
