@@ -4,6 +4,7 @@ import { RewardService } from '../services/RewardService';
 import { AgoraService } from '../services/AgoraService';
 import { WordService } from '../services/game/WordService';
 import { UserRepository } from '../../infrastructure/repositories/UserRepository';
+import { GameSessionRepository } from '../../infrastructure/repositories/GameSessionRepository';
 import { User } from '../../domain/entities/User';
 
 const logger = Logger.getInstance();
@@ -34,10 +35,12 @@ export class WhoIsSpyManager {
   private io: SocketServer;
   private interval: NodeJS.Timeout | null = null;
   private votes: Record<string, string> = {}; // voterId -> targetId
+  private gameSessionRepository: GameSessionRepository;
 
   constructor(sessionId: string, io: SocketServer) {
     this.sessionId = sessionId;
     this.io = io;
+    this.gameSessionRepository = new GameSessionRepository();
   }
 
   public static getOrCreate(sessionId: string, io: SocketServer): WhoIsSpyManager {
@@ -152,6 +155,12 @@ export class WhoIsSpyManager {
 
     logger.info(`🎭 Roles distributed for session ${this.sessionId}: ${spyCount} spy(ies) assigned.`);
     
+    // Sync with DB
+    await this.gameSessionRepository.updateStatus(this.sessionId, 'ACTIVE', {
+      players: this.players.map(p => ({ userId: p.userId, role: p.role })),
+      wordPair: { citizenWord, spyWord }
+    });
+
     this.startRevealPhase();
   }
 
@@ -179,6 +188,8 @@ export class WhoIsSpyManager {
     this.phase = 'REVEAL';
     this.timer = 10;
     this.emitState();
+    
+    this.gameSessionRepository.updateStatus(this.sessionId, 'ACTIVE', { phase: 'REVEAL' });
 
     this.startTimer(() => {
       this.startDiscussionPhase();
@@ -202,8 +213,15 @@ export class WhoIsSpyManager {
       return;
     }
 
+    const currentSpeaker = this.players[this.currentSpeakerIndex];
     this.timer = 30;
     this.emitState();
+    
+    // Explicit Turn Update for Frontend Highlighting
+    this.io.of('/game').to(`game:whoisspy:${this.sessionId}`).emit('turn:update', {
+      userId: currentSpeaker.userId,
+      timer: this.timer
+    });
 
     this.startTimer(() => {
       this.moveToNextPlayer();
@@ -228,6 +246,8 @@ export class WhoIsSpyManager {
     this.phase = 'VOTING';
     this.timer = 20;
     this.emitState();
+    
+    this.gameSessionRepository.updateStatus(this.sessionId, 'ACTIVE', { phase: 'VOTING' });
 
     this.startTimer(() => {
       this.calculateResults();
@@ -236,10 +256,31 @@ export class WhoIsSpyManager {
 
   public castVote(voterId: string, targetId: string) {
     if (this.phase !== 'VOTING') return;
+    
+    // Validation: No self-voting
+    if (voterId === targetId) {
+      logger.warn(`🚫 User ${voterId} attempted to vote for themselves.`);
+      return;
+    }
+
+    // Validation: Only one vote
+    if (this.votes[voterId]) {
+      logger.warn(`🚫 User ${voterId} attempted to vote twice.`);
+      return;
+    }
+
     this.votes[voterId] = targetId;
     
     // Check if everyone voted
-    const aliveCount = this.players.filter(p => p.isAlive).length;
+    const alivePlayers = this.players.filter(p => p.isAlive);
+    const aliveCount = alivePlayers.length;
+    
+    // Optional: Emit vote count update (count only, not IDs)
+    this.io.of('/game').to(`game:whoisspy:${this.sessionId}`).emit('game:vote_cast', {
+      count: Object.keys(this.votes).length,
+      total: aliveCount
+    });
+
     if (Object.keys(this.votes).length >= aliveCount) {
       this.calculateResults();
     }
@@ -283,6 +324,9 @@ export class WhoIsSpyManager {
       this.timer = 15;
       this.emitState();
       this.io.of('/game').to(`game:whoisspy:${this.sessionId}`).emit('game:game_over', { winner });
+      
+      // Update DB with winner
+      await this.gameSessionRepository.setWinner(this.sessionId, winner);
       await this.awardPrizes(winner);
       
       // Auto-reset after 15 seconds
