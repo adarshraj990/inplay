@@ -18,22 +18,15 @@ async function bootstrap(): Promise<void> {
     const config = AppConfig.getInstance();
     logger.info(`🚀 Starting Indplay Server in ${config.nodeEnv} mode`);
 
-    // ── Connect to Services (Graceful Startup) ───────────
-    try {
-      const db = DatabaseService.getInstance();
-      await db.connect();
-    } catch (dbError) {
-      logger.error('⚠️  Database connection failed during startup. Continuing...', dbError);
-    }
+    // ── Connect to Services (Strict Startup) ─────────────
+    const db = DatabaseService.getInstance();
+    await db.connect();
+    logger.info('✅ Database connected successfully');
 
-    try {
-      const redis = RedisService.getInstance();
-      await redis.connect();
-      if (redis.isConnected) {
-        logger.info('✅ Redis connected');
-      }
-    } catch (redisError) {
-      logger.error('⚠️  Redis connection failed during startup. Continuing...', redisError);
+    const redis = RedisService.getInstance();
+    await redis.connect();
+    if (redis.isConnected) {
+      logger.info('✅ Redis connected successfully');
     }
 
     // ── Initialize Express App ───────────────────────────
