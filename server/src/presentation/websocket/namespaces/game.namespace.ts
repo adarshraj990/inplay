@@ -44,6 +44,25 @@ export function gameNamespace(io: SocketServer): void {
       }
     });
 
+    // ── Global Matchmaking Queue (Quick Play) ──────────
+    socket.on('lobby:quick_play', async () => {
+      logger.info(`⚡ [Quick Play] Matchmaking request from ${userId}`);
+      const sessionId = WhoIsSpyManager.findOrCreateMatch(io);
+      const room = `game:whoisspy:${sessionId}`;
+      
+      const manager = WhoIsSpyManager.getOrCreate(sessionId, io);
+      const joined = await manager.joinLobby(userId);
+      
+      if (joined) {
+        (socket as any).sessionId = sessionId;
+        socket.join(room);
+        socket.emit('lobby:quick_play_success', { sessionId });
+        logger.info(`🎮 [Quick Play] ${userId} assigned to ${sessionId}`);
+      } else {
+        socket.emit('error', { message: 'MATCHMAKING_ERROR' });
+      }
+    });
+
     // ── Leave lobby ─────────────────────────────────────
     socket.on('lobby:leave', ({ sessionId }: { sessionId: string }) => {
       const room = `game:whoisspy:${sessionId}`;

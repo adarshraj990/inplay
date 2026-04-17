@@ -37,6 +37,7 @@ export class WhoIsSpyManager {
   private interval: NodeJS.Timeout | null = null;
   private votes: Record<string, string> = {}; // voterId -> targetId
   private gameSessionRepository: GameSessionRepository;
+  private isPublic: boolean = false;
 
   constructor(sessionId: string, io: SocketServer) {
     this.sessionId = sessionId;
@@ -49,6 +50,23 @@ export class WhoIsSpyManager {
       this.sessions.set(sessionId, new WhoIsSpyManager(sessionId, io));
     }
     return this.sessions.get(sessionId)!;
+  }
+
+  public static findOrCreateMatch(io: SocketServer): string {
+    // 1. Look for existing public lobby with space
+    for (const [id, manager] of this.sessions.entries()) {
+      if (manager.isPublic && manager.phase === 'LOBBY' && manager.players.length < WhoIsSpyManager.MAX_PLAYERS) {
+        logger.info(`🔍 [Matchmaking] Found existing lobby: ${id}`);
+        return id;
+      }
+    }
+
+    // 2. Create new public lobby if none found
+    const newId = `PUB_${Math.floor(1000 + Math.random() * 9000)}`;
+    const manager = this.getOrCreate(newId, io);
+    manager.isPublic = true;
+    logger.info(`🆕 [Matchmaking] Created new public lobby: ${newId}`);
+    return newId;
   }
 
   public async joinLobby(userId: string): Promise<boolean> {
