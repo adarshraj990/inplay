@@ -45,6 +45,20 @@ async function bootstrap(): Promise<void> {
       logger.info(`🟢 Indplay Server listening on http://${host}:${port}`);
       logger.info(`📡 WebSocket endpoint: ws://${host}:${port}`);
       logger.info(`📚 API Docs: http://${host}:${port}/api/docs`);
+
+      // ── DB Keep-Alive Ping Service (Production Only) ─────
+      if (config.nodeEnv === 'production') {
+        logger.info('🛡️  Enabling Database Keep-Alive service (5m ping)');
+        setInterval(async () => {
+          try {
+            const db = DatabaseService.getInstance();
+            await db.healthCheck();
+            logger.info('🛰️  Keep-Alive: Database ping successful');
+          } catch (e) {
+            logger.error('🛰️  Keep-Alive: Database ping failed', e);
+          }
+        }, 5 * 60 * 1000); // 5 minutes
+      }
     });
 
     // ── Graceful Shutdown ────────────────────────────────
