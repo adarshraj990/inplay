@@ -99,6 +99,28 @@ export class SocialController {
       next(e);
     }
   };
+
+  getPendingRequests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = (req as AuthenticatedRequest).userId;
+
+      const requests = await this.prisma.friendship.findMany({
+        where: {
+          addresseeId: userId,
+          status: 'PENDING'
+        },
+        include: {
+          requester: {
+            select: { id: true, username: true, displayName: true, avatarUrl: true, status: true }
+          }
+        }
+      });
+
+      res.json({ success: true, data: requests });
+    } catch (e) {
+      next(e);
+    }
+  };
   getNotificationStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = (req as AuthenticatedRequest).userId;

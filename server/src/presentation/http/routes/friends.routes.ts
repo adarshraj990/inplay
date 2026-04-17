@@ -11,4 +11,5 @@ friendsRouter.use(authenticate);
 friendsRouter.post('/request', socialController.sendRequest);
 friendsRouter.patch('/respond', socialController.respondToRequest);
 friendsRouter.get('/list', socialController.listFriends);
+friendsRouter.get('/pending', socialController.getPendingRequests);
 friendsRouter.get('/notifications/stats', socialController.getNotificationStats);
