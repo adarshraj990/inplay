@@ -18,15 +18,22 @@ async function bootstrap(): Promise<void> {
     const config = AppConfig.getInstance();
     logger.info(`🚀 Starting Indplay Server in ${config.nodeEnv} mode`);
 
-    // ── Connect to Database ──────────────────────────────
-    const db = DatabaseService.getInstance();
-    await db.connect();
+    // ── Connect to Services (Graceful Startup) ───────────
+    try {
+      const db = DatabaseService.getInstance();
+      await db.connect();
+    } catch (dbError) {
+      logger.error('⚠️  Database connection failed during startup. Continuing...', dbError);
+    }
 
-    // ── Connect to Redis ─────────────────────────────────
-    const redis = RedisService.getInstance();
-    await redis.connect();
-    if (redis.isConnected) {
-      logger.info('✅ Redis connected');
+    try {
+      const redis = RedisService.getInstance();
+      await redis.connect();
+      if (redis.isConnected) {
+        logger.info('✅ Redis connected');
+      }
+    } catch (redisError) {
+      logger.error('⚠️  Redis connection failed during startup. Continuing...', redisError);
     }
 
     // ── Initialize Express App ───────────────────────────
@@ -39,18 +46,26 @@ async function bootstrap(): Promise<void> {
 
     // ── Start Listening ──────────────────────────────────
     const port = config.port;
-    httpServer.listen(port, () => {
-      logger.info(`🟢 Indplay Server listening on http://localhost:${port}`);
-      logger.info(`📡 WebSocket endpoint: ws://localhost:${port}`);
-      logger.info(`📚 API Docs: http://localhost:${port}/api/docs`);
+    const host = '0.0.0.0'; // Bind to all interfaces for Render/Docker
+
+    httpServer.listen(port, host, () => {
+      logger.info(`🟢 Indplay Server listening on http://${host}:${port}`);
+      logger.info(`📡 WebSocket endpoint: ws://${host}:${port}`);
+      logger.info(`📚 API Docs: http://${host}:${port}/api/docs`);
     });
 
     // ── Graceful Shutdown ────────────────────────────────
     const shutdown = async (signal: string) => {
       logger.info(`\n⚠️  ${signal} received – shutting down gracefully...`);
       httpServer.close(async () => {
-        await db.disconnect();
-        await redis.disconnect();
+        try {
+          const db = DatabaseService.getInstance();
+          const redis = RedisService.getInstance();
+          await db.disconnect();
+          await redis.disconnect();
+        } catch (e) {
+          logger.error('Error during shutdown:', e);
+        }
         logger.info('👋 Server shutdown complete');
         process.exit(0);
       });
