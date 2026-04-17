@@ -19,6 +19,7 @@ interface Player {
   level: number;
   xp: number;
   isReady: boolean;
+  isOnline: boolean;
 }
 
 const logger = Logger.getInstance();
@@ -64,7 +65,8 @@ export class WhoIsSpyManager {
       isAlive: true,
       level: user?.level || 1,
       xp: user?.xp || 0,
-      isReady: true, // Auto-ready for now as per simple lobby logic
+      isReady: true,
+      isOnline: true,
     });
 
     this.emitState();
@@ -137,6 +139,7 @@ export class WhoIsSpyManager {
         level: u?.level || 1,
         xp: u?.xp || 0,
         isReady: true,
+        isOnline: true,
       };
     }) as any;
 
@@ -203,8 +206,8 @@ export class WhoIsSpyManager {
   }
 
   private nextTurn() {
-    // Find next alive player
-    while (this.currentSpeakerIndex < this.players.length && !this.players[this.currentSpeakerIndex].isAlive) {
+    // Find next alive AND online player
+    while (this.currentSpeakerIndex < this.players.length && (!this.players[this.currentSpeakerIndex].isAlive || !this.players[this.currentSpeakerIndex].isOnline)) {
       this.currentSpeakerIndex++;
     }
 
@@ -388,5 +391,26 @@ export class WhoIsSpyManager {
 
   public getPlayerData(userId: string) {
     return this.players.find(p => p.userId === userId);
+  }
+
+  public handleDisconnect(userId: string) {
+    const player = this.players.find(p => p.userId === userId);
+    if (!player) return;
+
+    if (this.phase === 'LOBBY') {
+      this.leaveLobby(userId);
+    } else {
+      player.isOnline = false;
+      logger.info(`🔌 Player ${userId} went offline in session ${this.sessionId}.`);
+      
+      // If it's their turn, skip it
+      const currentSpeaker = this.players[this.currentSpeakerIndex];
+      if (currentSpeaker?.userId === userId && this.phase === 'DISCUSSION') {
+        logger.info(`⏩ Skipping offline speaker ${userId}.`);
+        this.moveToNextPlayer();
+      }
+      
+      this.emitState();
+    }
   }
 }

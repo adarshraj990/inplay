@@ -36,6 +36,7 @@ export function gameNamespace(io: SocketServer): void {
       
       const joined = await manager.joinLobby(userId);
       if (joined) {
+        (socket as any).sessionId = sessionId;
         socket.join(room);
         logger.debug(`🎮 User ${userId} joined lobby ${room}`);
       } else {
@@ -129,6 +130,11 @@ export function gameNamespace(io: SocketServer): void {
 
     socket.on('disconnect', () => {
       logger.debug(`🎮 [Game] User ${userId} disconnected`);
+      const sessionId = (socket as any).sessionId;
+      if (sessionId) {
+        const manager = WhoIsSpyManager.getOrCreate(sessionId, io);
+        manager.handleDisconnect(userId);
+      }
     });
   });
 }

@@ -23,11 +23,23 @@ const RevealCard: React.FC<RevealCardProps> = ({ word, role, gameStarted }) => {
   const [isRevealed, setIsRevealed] = useState(false);
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
+  const scanAnim = useRef(new Animated.Value(0)).current;
+
+  const startScan = () => {
+    scanAnim.setValue(0);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scanAnim, { toValue: CARD_HEIGHT, duration: 1500, useNativeDriver: true }),
+        Animated.timing(scanAnim, { toValue: 0, duration: 1500, useNativeDriver: true }),
+      ])
+    ).start();
+  };
 
   const handlePressIn = () => {
     if (!gameStarted) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     setIsRevealed(true);
+    startScan();
     Animated.parallel([
       Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
       Animated.spring(scale, { toValue: 1.05, useNativeDriver: true }),
@@ -35,6 +47,7 @@ const RevealCard: React.FC<RevealCardProps> = ({ word, role, gameStarted }) => {
   };
 
   const handlePressOut = () => {
+    scanAnim.stopAnimation();
     Animated.parallel([
       Animated.timing(opacity, { toValue: 0, duration: 250, useNativeDriver: true }),
       Animated.spring(scale, { toValue: 1, useNativeDriver: true }),
@@ -70,10 +83,18 @@ const RevealCard: React.FC<RevealCardProps> = ({ word, role, gameStarted }) => {
               style={styles.content}
             >
               <View style={styles.secretIconCircle}>
-                <Ionicons name="help" size={50} color={Colors.turquoise} />
+                <Ionicons name="finger-print" size={50} color={Colors.turquoise} />
               </View>
               <Text style={styles.promptText}>Hold to reveal secret</Text>
               <Text style={styles.warningText}>Make sure no one is looking! 🤫</Text>
+              
+              {/* ── Scan Line ── */}
+              <Animated.View 
+                style={[
+                  styles.scanLine, 
+                  { transform: [{ translateY: scanAnim }] }
+                ]} 
+              />
             </LinearGradient>
           )}
 
@@ -156,6 +177,19 @@ const styles = StyleSheet.create({
   wordLabel: { fontSize: Typography.tiny, fontWeight: '700', color: 'rgba(255,255,255,0.8)', marginBottom: 4 },
   wordValue: { fontSize: Typography.h1, fontWeight: '900', color: '#fff' },
   bgIcon: { position: 'absolute', bottom: -20, right: -20 },
+  scanLine: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: Colors.turquoise,
+    shadowColor: Colors.turquoise,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 10,
+  }
 });
 
 export default RevealCard;

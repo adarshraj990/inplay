@@ -26,6 +26,11 @@ import { useWhoIsSpyGame } from '../hooks/useWhoIsSpyGame';
 import { useAgoraVoice } from '../hooks/useAgoraVoice';
 import { CONFIG } from '../config';
 import * as Haptics from 'expo-haptics';
+import { LayoutAnimation, Platform, UIManager } from 'react-native';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 type GamePhase = 'LOBBY' | 'REVEAL' | 'PLAYING' | 'VOTING' | 'RESULT';
 
@@ -66,10 +71,26 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   // ── Integrate Turn-Based Voice ──────────────────────
   useAgoraVoice('1', agoraToken, channelName, phase, currentSpeakerId);
 
-  const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
   const [profileVisible, setProfileVisible] = useState(false);
-
   const [isHost] = useState(true);
+  const [bannerText, setBannerText] = useState<string | null>(null);
+
+  // ── Handle Phase Transitions (UX) ──────────────────
+  React.useEffect(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    
+    if (phase === 'DISCUSSION') setBannerText('DISCUSSION START');
+    else if (phase === 'VOTING') setBannerText('VOTING OPEN');
+    else if (phase === 'RESULT') setBannerText('GAME OVER');
+    else setBannerText(null);
+
+    if (phase !== 'LOBBY') {
+      const timer = setTimeout(() => {
+        setBannerText(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [phase]);
 
   const startGame = useCallback(() => {
     // Collect all valid player IDs from live players
@@ -120,6 +141,14 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
 
         <View style={styles.main}>
+          {bannerText && (
+            <View style={styles.bannerOverlay}>
+              <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,0)']} style={styles.bannerBg}>
+                <Text style={styles.bannerText}>{bannerText}</Text>
+              </LinearGradient>
+            </View>
+          )}
+
           {phase === 'VOTING' ? (
             <VotingPhase 
               players={livePlayers.map((p, idx) => ({ 
@@ -329,6 +358,28 @@ const styles = StyleSheet.create({
     borderColor: Colors.background
   },
   
+  bannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
+  bannerBg: {
+    width: '100%',
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  bannerText: {
+    color: Colors.turquoise,
+    fontSize: Typography.hero,
+    fontWeight: '900',
+    letterSpacing: 4,
+    textShadowColor: 'rgba(0, 212, 200, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
+  },
+
   timerBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'rgba(0, 212, 200, 0.1)', paddingVertical: 8, marginBottom: Spacing.md },
   timerText: { color: Colors.turquoise, fontWeight: '700', fontSize: 14 },
 

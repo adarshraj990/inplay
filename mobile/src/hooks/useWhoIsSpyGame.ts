@@ -157,5 +157,6 @@ export const useWhoIsSpyGame = (sessionId: string, userId: string) => {
     startGame,
     castVote,
     skipTurn,
+    simulateBots,
   };
 };

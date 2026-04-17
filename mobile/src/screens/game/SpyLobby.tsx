@@ -18,6 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useWhoIsSpyGame } from '../../hooks/useWhoIsSpyGame';
+import { Share } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -25,21 +26,25 @@ const { width } = Dimensions.get('window');
 const ICONS = ['logo-octocat', 'rocket', 'flask', 'planet', 'construct', 'bulb'];
 
 const SpyLobby: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { phase, timer, players } = useWhoIsSpyGame('SPY99', '1'); // Session ID #SPY99
+  const { phase, timer, players, simulateBots } = useWhoIsSpyGame('SPY99', '1'); // Session ID #SPY99
   
   const readyCount = players.length;
   const countdown = timer;
   const isGameStarting = phase === 'LOBBY' && readyCount === 6 && countdown > 0;
 
-  // Transition to Role Assignment automatically
-  useEffect(() => {
-    if (phase === 'REVEAL') {
-      navigation.replace('RoleAssignment');
+  const onShare = async () => {
+    try {
+      await Share.share({
+        message: `Join my Indplay 'Who is Spy?' room! Room ID: #SPY99 🎭`,
+      });
+    } catch (error) {
+      console.log('Share failed', error);
     }
-  }, [phase, navigation]);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
       <LinearGradient
         colors={[Colors.background, Colors.deepBlue]}
         style={StyleSheet.absoluteFill}
@@ -52,14 +57,28 @@ const SpyLobby: React.FC<{ navigation: any }> = ({ navigation }) => {
       </View>
 
       <View style={styles.content}>
+        {/* ── Fancy Header ── */}
         <View style={styles.header}>
-          <Text style={styles.lobbyId}>ROOM: #SPY99</Text>
-          <Text style={styles.title}>Who is the Spy?</Text>
-          <Text style={styles.subtitle}>
-            {readyCount < 6 
-              ? `Waiting for players... (${readyCount}/6)` 
-              : 'Protocol Initialized. Prepare for briefing.'}
-          </Text>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={28} color="white" />
+          </TouchableOpacity>
+          <View style={styles.headerTextCol}>
+            <Text style={styles.lobbyTitle}>Who is Spy?</Text>
+            <TouchableOpacity onPress={onShare} style={styles.roomRow}>
+              <Text style={styles.roomId}>ROOM: #SPY99</Text>
+              <Ionicons name="share-outline" size={14} color={Colors.turquoise} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.settingsBtn}>
+              <Ionicons name="settings-outline" size={24} color="white" />
+            </TouchableOpacity>
+            {__DEV__ && (
+              <TouchableOpacity onPress={simulateBots} style={styles.debugBtn}>
+                <Ionicons name="bug-outline" size={20} color={Colors.saffron} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {/* ── Player Grid (2x3) ── */}
@@ -171,10 +190,15 @@ const styles = StyleSheet.create({
   circuit1: { position: 'absolute', top: -50, left: -100, transform: [{ rotate: '45deg' }] },
   circuit2: { position: 'absolute', bottom: -50, right: -100 },
 
-  header: { alignItems: 'center', marginTop: Spacing.lg },
-  lobbyId: { color: Colors.turquoise, fontSize: 12, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
-  title: { color: Colors.textPrimary, fontSize: Typography.hero, fontWeight: '900', textAlign: 'center' },
-  subtitle: { color: Colors.textSecondary, fontSize: Typography.body, marginTop: 8, opacity: 0.8 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.md },
+  backBtn: { padding: 8 },
+  headerTextCol: { alignItems: 'center' },
+  lobbyTitle: { color: 'white', fontSize: 18, fontWeight: '800' },
+  roomRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  roomId: { fontSize: 12, color: Colors.turquoise, fontWeight: '700', letterSpacing: 1, marginRight: 4 },
+  headerActions: { flexDirection: 'row', alignItems: 'center' },
+  settingsBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  debugBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
 
   grid: { 
     flexDirection: 'row', 
