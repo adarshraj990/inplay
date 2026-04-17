@@ -1,6 +1,7 @@
 // src/domain/entities/User.ts — Domain entity (pure, no ORM deps)
 export interface User {
   id: string;
+  gameUid: string;
   username: string;
   email: string;
   passwordHash: string;
@@ -36,6 +37,7 @@ export enum UserStatus {
 
 export interface UserPublicProfile {
   id: string;
+  gameUid: string;
   username: string;
   displayName: string;
   avatarUrl: string | null;

@@ -1,24 +1,27 @@
 /**
  * Centralized configuration for API and Socket connections.
- * 
- * IMPORTANT FOR APK BUILDS:
- * Replace 'localhost' with your computer's Local IP Address (e.g., '192.168.1.10')
- * to allow the APK to connect to your local backend.
  */
 
-const IS_PRODUCTION = true; 
-const PROD_URL = 'https://indplay-backend.onrender.com';
-const DEV_IP = 'localhost'; 
-const PORT = '5000'; // Updated to match backend change
+// Use EXPO_PUBLIC_ prefix for variables to be available in the app
+// Defaults to the production Render URL if not specified
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://indplay-backend-v3.onrender.com';
 
-export const API_BASE_URL = IS_PRODUCTION ? `${PROD_URL}/api/v1` : `http://${DEV_IP}:${PORT}/api/v1`;
-export const SOCKET_URL = IS_PRODUCTION ? PROD_URL : `http://${DEV_IP}:${PORT}`;
+// Ensure the URL ends correctly for different uses
+export const API_BASE_URL = BASE_URL.endsWith('/api/v1') ? BASE_URL : `${BASE_URL}/api/v1`;
+export const SOCKET_URL = BASE_URL.replace('/api/v1', '');
 
 export const CONFIG = {
   API_BASE_URL,
   SOCKET_URL,
   ENDPOINTS: {
+    USER_PROFILE: `${API_BASE_URL}/users/me`,
     DAILY_REWARD: `${API_BASE_URL}/users/me/daily-reward`,
     REPORTS: `${API_BASE_URL}/reports`,
+    ROOMS: `${API_BASE_URL}/rooms`,
+    STATS: `${API_BASE_URL}/stats/overview`,
+    FRIENDS: `${API_BASE_URL}/friends/list`,
+    LOGIN: `${API_BASE_URL}/auth/login`,
+    REGISTER: `${API_BASE_URL}/auth/register`,
+    TASKS: `${API_BASE_URL}/rewards/tasks`,
   }
 };

@@ -5,7 +5,7 @@ export class AppConfig {
 
   public readonly nodeEnv: string;
   public readonly port: number;
-  public readonly mongodbUri: string;
+  public readonly databaseUrl: string;
   public readonly redisUrl: string;
   public readonly redisPassword: string;
   public readonly jwtSecret: string;
@@ -22,7 +22,7 @@ export class AppConfig {
   private constructor() {
     this.nodeEnv = process.env.NODE_ENV ?? 'development';
     this.port = parseInt(process.env.PORT ?? '5000', 10);
-    this.mongodbUri = this.require('MONGODB_URI');
+    this.databaseUrl = this.require('DATABASE_URL');
     this.redisUrl = process.env.REDIS_URL ?? 'redis://localhost:6379';
     this.redisPassword = process.env.REDIS_PASSWORD ?? '';
     this.jwtSecret = this.require('JWT_SECRET');

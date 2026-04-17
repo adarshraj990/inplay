@@ -1,76 +1,116 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
+import { CONFIG } from '../config';
+import apiService from '../services/apiService';
 
-const STATS = [
-  { label: 'Games Played', value: '142',  icon: 'game-controller', color: Colors.turquoise },
-  { label: 'Wins',         value: '61',   icon: 'trophy',          color: Colors.saffron   },
-  { label: 'Win Rate',     value: '43%',  icon: 'trending-up',     color: Colors.online    },
-  { label: 'Friends',      value: '28',   icon: 'people',          color: '#A78BFA'        },
-];
+const ProfileScreen: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
-const MENU_ITEMS = [
-  { icon: 'person-outline',       label: 'Edit Profile'    },
-  { icon: 'shield-checkmark',     label: 'Privacy & Safety'},
-  { icon: 'notifications-outline',label: 'Notifications'   },
-  { icon: 'color-palette-outline',label: 'Appearance'      },
-  { icon: 'help-circle-outline',  label: 'Help & Support'  },
-  { icon: 'log-out-outline',      label: 'Sign Out', danger: true },
-];
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const response = await apiService.get(CONFIG.ENDPOINTS.USER_PROFILE);
+        if (response.data.success) {
+          setUser(response.data.data);
+        }
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-const ProfileScreen: React.FC = () => (
-  <SafeAreaView style={styles.safe} edges={['top']}>
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-      {/* Hero */}
-      <LinearGradient colors={['#0F3460', Colors.background]} style={styles.hero}>
-        <LinearGradient colors={Colors.gradientTurquoise} style={styles.avatarRing}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>A</Text>
+    fetchProfile();
+  }, []);
+
+  const stats = [
+    { label: 'Level',         value: user?.level?.toString() || '1',   icon: 'star',            color: Colors.saffron   },
+    { label: 'XP',            value: user?.xp?.toString() || '0',       icon: 'trending-up',     color: Colors.turquoise },
+    { label: 'Coins',         value: user?.coins?.toString() || '0',    icon: 'cash-outline',     color: Colors.online    },
+    { label: 'Games Played',  value: '0',                             icon: 'game-controller', color: '#A78BFA'        },
+  ];
+
+  if (loading && !user) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color={Colors.turquoise} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        {/* Hero */}
+        <LinearGradient colors={['#0F3460', Colors.background] as string[]} style={styles.hero}>
+          <LinearGradient colors={Colors.gradientTurquoise} style={styles.avatarRing}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{(user?.displayName || user?.username || 'A')[0]}</Text>
+            </View>
+          </LinearGradient>
+          <Text style={styles.name}>{user?.displayName || user?.username || 'Indplay User'}</Text>
+          <Text style={styles.handle}>@{user?.username || 'username'}</Text>
+          
+          <View style={styles.uidContainer}>
+            <Text style={styles.uidLabel}>UID:</Text>
+            <Text style={styles.uidValue}>{user?.gameUid || '--------'}</Text>
+            <TouchableOpacity onPress={() => {}} style={styles.copyBtn}>
+              <Ionicons name="copy-outline" size={14} color={Colors.turquoise} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.levelRow}>
+            <Ionicons name="star" size={14} color={Colors.saffron} />
+            <Text style={styles.level}>Level {user?.level || 1} · {user?.xp || 0} XP</Text>
           </View>
         </LinearGradient>
-        <Text style={styles.name}>Adarsh</Text>
-        <Text style={styles.handle}>@adarsh_plays</Text>
 
-        <View style={styles.levelRow}>
-          <Ionicons name="star" size={14} color={Colors.saffron} />
-          <Text style={styles.level}>Level 12 · Spy Master</Text>
-        </View>
-      </LinearGradient>
-
-      {/* Stats grid */}
-      <View style={styles.statsGrid}>
-        {STATS.map((s) => (
-          <View key={s.label} style={[styles.statCard, { borderColor: s.color + '33' }]}>
-            <Ionicons name={s.icon as any} size={20} color={s.color} />
-            <Text style={[styles.statValue, { color: s.color }]}>{s.value}</Text>
-            <Text style={styles.statLabel}>{s.label}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Menu */}
-      <View style={styles.menuSection}>
-        {MENU_ITEMS.map(({ icon, label, danger }) => (
-          <TouchableOpacity key={label} activeOpacity={0.75} style={styles.menuRow}>
-            <View style={[styles.menuIcon, { backgroundColor: danger ? Colors.danger + '18' : Colors.surfaceCard }]}>
-              <Ionicons name={icon as any} size={20} color={danger ? Colors.danger : Colors.textSecondary} />
+        {/* Stats grid */}
+        <View style={styles.statsGrid}>
+          {stats.map((s) => (
+            <View key={s.label} style={[styles.statCard, { borderColor: s.color + '33' }]}>
+              <Ionicons name={s.icon as any} size={20} color={s.color} />
+              <Text style={[styles.statValue, { color: s.color }]}>{s.value}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
             </View>
-            <Text style={[styles.menuLabel, danger && { color: Colors.danger }]}>{label}</Text>
-            {!danger && <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />}
-          </TouchableOpacity>
-        ))}
-      </View>
+          ))}
+        </View>
 
-      <View style={{ height: Spacing.xxl }} />
-    </ScrollView>
-  </SafeAreaView>
-);
+        {/* Menu */}
+        <View style={styles.menuSection}>
+          <TouchableOpacity activeOpacity={0.75} style={styles.menuRow}>
+            <View style={[styles.menuIcon, { backgroundColor: Colors.surfaceCard }]}>
+              <Ionicons name="person-outline" size={20} color={Colors.textSecondary} />
+            </View>
+            <Text style={styles.menuLabel}>Edit Profile</Text>
+            <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity activeOpacity={0.75} style={styles.menuRow}>
+            <View style={[styles.menuIcon, { backgroundColor: Colors.danger + '18' }]}>
+              <Ionicons name="log-out-outline" size={20} color={Colors.danger} />
+            </View>
+            <Text style={[styles.menuLabel, { color: Colors.danger }]}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ height: Spacing.xxl }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
+  loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scroll: { paddingBottom: Spacing.xxl },
   hero: { alignItems: 'center', paddingTop: Spacing.xl, paddingBottom: Spacing.xl, gap: Spacing.sm },
   avatarRing: { width: 92, height: 92, borderRadius: 46, alignItems: 'center', justifyContent: 'center' },
@@ -80,6 +120,11 @@ const styles = StyleSheet.create({
   handle: { fontSize: Typography.body, color: Colors.textSecondary },
   levelRow: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: Colors.saffron + '18', paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs, borderRadius: Radius.full, borderWidth: 1, borderColor: Colors.saffron + '44' },
   level: { fontSize: Typography.caption, fontWeight: '700', color: Colors.saffron },
+
+  uidContainer: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.surfaceCard, paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.sm, marginTop: 4 },
+  uidLabel: { fontSize: 10, fontWeight: '700', color: Colors.textMuted, letterSpacing: 0.5 },
+  uidValue: { fontSize: 13, fontWeight: '800', color: Colors.turquoise, letterSpacing: 1 },
+  copyBtn: { padding: 4 },
 
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, paddingHorizontal: Spacing.md, marginBottom: Spacing.lg },
   statCard: { flex: 1, minWidth: '44%', backgroundColor: Colors.surfaceCard, borderRadius: Radius.md, borderWidth: 1, padding: Spacing.md, alignItems: 'center', gap: 4 },

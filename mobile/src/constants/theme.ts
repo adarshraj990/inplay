@@ -5,6 +5,7 @@ export const Colors = {
   surface:       '#24243E',   // slightly lighter surface
   surfaceCard:   '#1F1F35',   // deep card bg
   surfaceBorder: '#2D2D4B',   // subtle border / divider
+  deepBlue:      '#0F3460',   // deep blue for gradients
 
   // Accent
   turquoise:     '#00D4C8',   // primary turquoise
@@ -23,10 +24,10 @@ export const Colors = {
   danger:        '#F87171',
 
   // Gradient stops
-  gradientTurquoise: ['#00D4C8', '#0097A7'] as const,
-  gradientSaffron:   ['#FF9F1C', '#FF6B35'] as const,
-  gradientCard:      ['#1A1A2E', '#0F3460'] as const,
-  gradientHero:      ['#0F3460', '#16213E'] as const,
+  gradientTurquoise: ['#00D4C8', '#0097A7'],
+  gradientSaffron:   ['#FF9F1C', '#FF6B35'],
+  gradientCard:      ['#1A1A2E', '#0F3460'],
+  gradientHero:      ['#0F3460', '#16213E'],
 };
 
 export const Typography = {

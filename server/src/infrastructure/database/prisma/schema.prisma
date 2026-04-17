@@ -1,4 +1,4 @@
-// This is your Prisma schema file — WePlay Social Gaming App
+// This is your Prisma schema file — Indplay Social Gaming App
 // Learn more about Prisma: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -51,6 +51,7 @@ enum GameStatus {
 
 model User {
   id             String     @id @default(uuid())
+  gameUid        String     @unique
   username       String     @unique @db.VarChar(30)
   email          String     @unique
   passwordHash   String
@@ -61,6 +62,8 @@ model User {
   level          Int        @default(1)
   xp             Int        @default(0)
   coins          Int        @default(0)
+  dailyRewards   Json?
+  lastDailyRewardAt DateTime?
   isVerified     Boolean    @default(false)
   lastSeenAt     DateTime?
   createdAt      DateTime   @default(now())

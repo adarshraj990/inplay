@@ -39,7 +39,7 @@ const CreateRoomButton: React.FC<CreateRoomButtonProps> = ({
       style={[
         styles.shadow,
         style,
-        { transform: [{ scale }], shadowRadius, shadowOpacity },
+        { transform: [{ scale }] as any, shadowRadius, shadowOpacity },
       ]}
     >
       <TouchableOpacity

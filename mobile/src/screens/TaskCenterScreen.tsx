@@ -8,9 +8,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
+import { CONFIG } from '../config';
+import apiService from '../services/apiService';
 import TaskCard from '../components/TaskCard';
 
-// Dummy implementation for TaskCenterScreen
+// Real implementation for TaskCenterScreen
 const TaskCenterScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -18,55 +20,18 @@ const TaskCenterScreen: React.FC = () => {
   const [coins, setCoins] = useState(0);
 
   const fetchTasks = async () => {
-    // In a real app, this would be an API call
-    // Mocking response for now based on backend logic
-    setTimeout(() => {
-      setTasks([
-        {
-          id: 'check-in',
-          title: 'Daily Check-in',
-          description: 'Log in every day to earn rewards',
-          reward: 10,
-          current: 1,
-          target: 1,
-          isClaimed: true,
-          icon: 'calendar'
-        },
-        {
-          id: 'starter',
-          title: 'Starter Gamer',
-          description: 'Complete 3 matches in any game',
-          reward: 10,
-          current: 1,
-          target: 3,
-          isClaimed: false,
-          icon: 'game-controller'
-        },
-        {
-          id: 'pro',
-          title: 'Pro Gamer',
-          description: 'Complete 5 matches in any game',
-          reward: 15,
-          current: 1,
-          target: 5,
-          isClaimed: false,
-          icon: 'trophy'
-        },
-        {
-          id: 'social',
-          title: 'Social Gamer',
-          description: 'Play 2 matches with friends',
-          reward: 15,
-          current: 0,
-          target: 2,
-          isClaimed: false,
-          icon: 'people'
-        }
-      ]);
-      setCoins(10);
+    try {
+      const response = await apiService.get(CONFIG.ENDPOINTS.TASKS);
+      if (response.data) {
+        setTasks(response.data.tasks || []);
+        setCoins(response.data.dailyCoins || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    } finally {
       setLoading(false);
       setRefreshing(false);
-    }, 1000);
+    }
   };
 
   useEffect(() => {

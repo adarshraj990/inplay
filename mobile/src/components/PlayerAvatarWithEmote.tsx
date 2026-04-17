@@ -60,7 +60,7 @@ const PlayerAvatarWithEmote: React.FC<PlayerAvatarWithEmoteProps> = ({
     transform: [
       { translateY: translateY.value },
       { scale: scale.value }
-    ],
+    ] as any,
   }));
 
   return (

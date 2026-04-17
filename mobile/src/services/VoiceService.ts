@@ -46,6 +46,7 @@ export class VoiceService {
       onError: (err: number, msg: string) => {
         console.error('[Agora] Error:', err, msg);
       },
+      // @ts-ignore - Agora event handler types can be strict with library versions
     } as IRtcEngineEventHandler);
 
     // Default to muted

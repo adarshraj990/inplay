@@ -32,7 +32,7 @@ const GameCard: React.FC<GameCardProps> = ({
     Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 20 }).start();
 
   return (
-    <Animated.View style={[styles.wrapper, { transform: [{ scale }] }, featured && Shadows.glow]}>
+    <Animated.View style={[styles.wrapper, { transform: [{ scale }] as any }, featured && Shadows.glow]}>
       <TouchableOpacity
         activeOpacity={1}
         onPress={onPress}

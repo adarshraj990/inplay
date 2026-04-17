@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import { MongoUserRepository } from '../../../infrastructure/repositories/UserRepository';
+import { UserRepository } from '../../../infrastructure/repositories/UserRepository';
 import { AuthenticatedRequest } from '../middlewares/authenticate';
 import { AppConfig } from '../../../shared/config/AppConfig';
 import { RewardService } from '../../../application/services/RewardService';
 
 export class UserController {
-  private userRepository: MongoUserRepository;
+  private userRepository: UserRepository;
 
   constructor() {
-    this.userRepository = new MongoUserRepository();
+    this.userRepository = new UserRepository();
   }
 
   getProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

@@ -1,4 +1,4 @@
-// lib/core/theme/app_theme.dart — WePlay Design System
+// lib/core/theme/app_theme.dart — Indplay Design System
 import 'package:flutter/material.dart';
 
 class AppTheme {

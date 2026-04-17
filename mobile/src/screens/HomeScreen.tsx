@@ -1,7 +1,7 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
-  StatusBar, Animated, TouchableOpacity, Image, Alert
+  View, Text, StyleSheet,
+  StatusBar, Animated, TouchableOpacity, Alert, ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,94 +9,108 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { CONFIG } from '../config';
+import apiService from '../services/apiService';
+import { useAuth } from '../context/AuthContext';
 import GameCard from '../components/GameCard';
 import CreateRoomButton from '../components/CreateRoomButton';
 import ActiveRoomCard from '../components/ActiveRoomCard';
 
-// ── Mock data ────────────────────────────────────────────────────────────────
-const ACTIVE_ROOMS = [
-  { id: '1', roomName: "Adarsh's Spy Den",  game: "Who is Spy?", host: 'Adarsh',  players: 4, maxPlayers: 6, isLive: true  },
-  { id: '2', roomName: 'Midnight Detectives', game: "Who is Spy?", host: 'Riya',   players: 6, maxPlayers: 6, isLive: true  },
-  { id: '3', roomName: 'Casual Lobby',        game: "Who is Spy?", host: 'Krish',  players: 2, maxPlayers: 8, isLive: false },
-];
-
-// ── Header greeting ──────────────────────────────────────────────────────────
-const greeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 17) return 'Good afternoon';
-  return 'Good evening';
-};
-
 const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const scrollY = useRef(new Animated.Value(0)).current;
-
-  // Parallax for hero gradient
   const heroOpacity = scrollY.interpolate({ inputRange: [0, 120], outputRange: [1, 0.3], extrapolate: 'clamp' });
+  const { user } = useAuth();
 
+  // ── State ─────────────────────────────────────────────────────────────
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(user);
+  const [stats, setStats] = useState({ onlineCount: 0, activeRoomsCount: 0 });
+  const [rooms, setRooms] = useState<any[]>([]);
+
+  // ── Data Fetching ─────────────────────────────────────────────────────
   useEffect(() => {
-    const claimDaily = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(CONFIG.ENDPOINTS.DAILY_REWARD, {
-          method: 'POST'
-        });
-        const data = await response.json();
-        if (data.success) {
-          Alert.alert('🎁 Daily Bonus', 'You received 5 coins for opening Indplay today!');
-        }
-      } catch (e) {
-        // Silent fail for background tasks
+        setLoading(true);
+        // Run in parallel
+        const [profRes, statsRes, roomsRes] = await Promise.all([
+          apiService.get(CONFIG.ENDPOINTS.USER_PROFILE),
+          apiService.get(CONFIG.ENDPOINTS.STATS).catch(() => ({ data: { data: { onlineCount: 0, activeRoomsCount: 0 } } })),
+          apiService.get(CONFIG.ENDPOINTS.ROOMS).catch(() => ({ data: { data: [] } }))
+        ]);
+
+        if (profRes.data?.success) setProfile(profRes.data.data);
+        if (statsRes.data?.success) setStats(statsRes.data.data);
+        if (roomsRes.data?.success) setRooms(roomsRes.data.data);
+      } catch (error) {
+        console.error('Fetch error:', error);
+      } finally {
+        setLoading(false);
       }
     };
-    claimDaily();
+
+    fetchData();
   }, []);
+
+  const claimDaily = async () => {
+    try {
+      const response = await apiService.post(CONFIG.ENDPOINTS.DAILY_REWARD);
+      if (response.data.success) {
+        Alert.alert('🎁 Daily Bonus', 'You received 5 coins for opening Indplay today!');
+      }
+    } catch (e) {}
+  };
+
+  const greeting = () => {
+    const h = new Date().getHours();
+    const name = profile?.displayName || profile?.username || user?.displayName || user?.username || 'Welcome!';
+    const prefix = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    
+    return name === 'Welcome!' ? name : `${prefix}, ${name}`;
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
 
-      {/* ── Ambient gradient bg ── */}
       <Animated.View style={[styles.heroBg, { opacity: heroOpacity }]} pointerEvents="none">
         <LinearGradient
-          colors={['#0F3460AA', '#0D0D1A00']}
+          colors={['#0F3460AA', '#0D0D1A00'] as string[]}
           style={StyleSheet.absoluteFill}
         />
       </Animated.View>
 
-      {/* ── Top App Bar ── */}
       <View style={styles.appBar}>
         <Text style={styles.brandName}>Indplay</Text>
-        <TouchableOpacity style={styles.profileBtn} activeOpacity={0.7}>
+        <TouchableOpacity 
+          style={styles.profileBtn} 
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('Profile')}
+        >
           <Ionicons name="person-circle" size={32} color={Colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
-      {/* ── Scrollable content ── */}
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
         scrollEventThrottle={16}
       >
-        {/* ── Greeting hero ── */}
         <View style={styles.heroSection}>
-          <Text style={styles.greeting}>{greeting()}, Adarsh 👋</Text>
+          <Text style={styles.greeting}>{greeting()} 👋</Text>
           <Text style={styles.heroSub}>Ready to play? Pick a game or jump into a room.</Text>
 
-          {/* Online stats row */}
           <View style={styles.statsRow}>
-            <StatChip icon="people" value="1.2K" label="Online" color={Colors.online} />
-            <StatChip icon="game-controller" value="38"  label="Active Rooms" color={Colors.turquoise} />
-            <StatChip icon="trophy"          value="#12" label="Your Rank" color={Colors.saffron} />
+            <StatChip icon="people" value={stats.onlineCount.toString()} label="Online" color={Colors.online} />
+            <StatChip icon="game-controller" value={stats.activeRoomsCount.toString()} label="Active Rooms" color={Colors.turquoise} />
+            <StatChip icon="trophy" value={`#${profile?.rank || '??'}`} label="Your Rank" color={Colors.saffron} />
           </View>
         </View>
 
-        {/* ── Create Room CTA ── */}
         <View style={styles.section}>
           <CreateRoomButton onPress={() => {}} />
         </View>
 
-        {/* ── Discover Games ── */}
         <View style={styles.section}>
           <SectionHeader title="Discover Games" linkLabel="See all" />
           <GameCard
@@ -111,37 +125,32 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           />
         </View>
 
-        {/* ── More Games ── */}
-        <View style={styles.section}>
-          <SectionHeader title="More Games" linkLabel="Browse" />
-          <GameCard
-            title="Coming Soon"
-            description="New games are on the way. Stay tuned for more wild party experiences!"
-            icon="rocket"
-            playerCount="2–10"
-            tag="UPCOMING"
-            tagColor={Colors.saffron}
-          />
-        </View>
-
-        {/* ── Active Rooms ── */}
         <View style={styles.section}>
           <SectionHeader title="Active Rooms" linkLabel="View all" />
-          {ACTIVE_ROOMS.map((room) => (
-            <ActiveRoomCard
-              key={room.id}
-              roomName={room.roomName}
-              game={room.game}
-              host={room.host}
-              players={room.players}
-              maxPlayers={room.maxPlayers}
-              isLive={room.isLive}
-              onJoin={() => {}}
-            />
-          ))}
+          {loading ? (
+            <ActivityIndicator color={Colors.turquoise} style={{ marginVertical: 20 }} />
+          ) : rooms.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="cafe-outline" size={48} color={Colors.textMuted} />
+              <Text style={styles.emptyText}>No active rooms right now.</Text>
+              <Text style={styles.emptySub}>Why not create one yourself?</Text>
+            </View>
+          ) : (
+            rooms.map((room: any) => (
+              <ActiveRoomCard
+                key={room.id}
+                roomName={room.roomName}
+                game={room.game}
+                host={room.host}
+                players={room.players}
+                maxPlayers={room.maxPlayers}
+                isLive={room.isLive}
+                onJoin={() => {}}
+              />
+            ))
+          )}
         </View>
 
-        {/* Bottom spacer for tab bar */}
         <View style={{ height: Spacing.xxl }} />
       </Animated.ScrollView>
     </SafeAreaView>
@@ -209,14 +218,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.surfaceBorder + '66',
   },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  logoPill: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   brandName: { fontSize: Typography.h2, fontWeight: '900', color: Colors.textPrimary, letterSpacing: 0.5 },
   profileBtn: {
     width: 40,
@@ -232,6 +233,10 @@ const styles = StyleSheet.create({
   heroSub: { fontSize: Typography.body, color: Colors.textSecondary, lineHeight: 22 },
   statsRow: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.sm },
   section: { marginBottom: Spacing.lg },
+  
+  emptyState: { alignItems: 'center', paddingVertical: 40, gap: 8 },
+  emptyText: { fontSize: Typography.body, fontWeight: '700', color: Colors.textPrimary },
+  emptySub: { fontSize: Typography.caption, color: Colors.textMuted },
 });
 
 export default HomeScreen;

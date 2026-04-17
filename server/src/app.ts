@@ -22,6 +22,8 @@ import { gameRouter } from './presentation/http/routes/game.routes';
 import { messagesRouter } from './presentation/http/routes/messages.routes';
 import rewardRouter from './presentation/http/routes/reward.routes';
 import { reportRouter } from './presentation/http/routes/report.routes';
+import { StatsController } from './presentation/http/controllers/StatsController';
+import { SyncStatusController } from './presentation/http/controllers/SyncStatusController';
 
 const logger = Logger.getInstance();
 
@@ -80,6 +82,9 @@ export function createApp(): Application {
     });
   });
 
+  const syncStatusController = new SyncStatusController();
+  app.get('/health/sync', (req, res) => syncStatusController.getSyncStatus(req, res));
+
   // ── API Documentation ────────────────────────────────
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
@@ -94,6 +99,10 @@ export function createApp(): Application {
   apiV1.use('/games', gameRouter);
   apiV1.use('/rewards', rewardRouter);
   apiV1.use('/reports', reportRouter);
+  
+  const statsController = new StatsController();
+  apiV1.get('/stats/overview', statsController.getOverview);
+
   app.use('/api/v1', apiV1);
 
   // New Social & Messaging Routes (Fresh Start)

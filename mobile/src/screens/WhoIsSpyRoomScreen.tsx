@@ -38,7 +38,7 @@ interface Player {
 }
 
 const MOCK_PLAYERS: Player[] = [
-  { id: '1', name: 'Adarsh', avatar: 'https://i.pravatar.cc/150?u=1', isHost: true },
+  { id: '1', name: 'Host (You)', avatar: 'https://i.pravatar.cc/150?u=1', isHost: true },
   { id: '2', name: 'Riya', avatar: 'https://i.pravatar.cc/150?u=2', isHost: false },
   { id: '3', name: 'Krish', avatar: 'https://i.pravatar.cc/150?u=3', isHost: false },
   { id: '4', name: 'Zoya', avatar: 'https://i.pravatar.cc/150?u=4', isHost: false },

@@ -1,5 +1,5 @@
-// src/infrastructure/database/DatabaseService.ts — Mongoose singleton
-import mongoose from 'mongoose';
+// src/infrastructure/database/DatabaseService.ts — Prisma singleton
+import { PrismaClient } from '@prisma/client';
 import { AppConfig } from '../../shared/config/AppConfig';
 import { Logger } from '../../shared/utils/Logger';
 
@@ -7,6 +7,7 @@ const logger = Logger.getInstance();
 
 export class DatabaseService {
   private static instance: DatabaseService;
+  private _client: PrismaClient | null = null;
   private _isConnected = false;
 
   private constructor() {}
@@ -18,6 +19,13 @@ export class DatabaseService {
     return DatabaseService.instance;
   }
 
+  get client(): PrismaClient {
+    if (!this._client) {
+      throw new Error('Database client not initialized. Call connect() first.');
+    }
+    return this._client;
+  }
+
   get isConnected(): boolean {
     return this._isConnected;
   }
@@ -25,37 +33,38 @@ export class DatabaseService {
   async connect(): Promise<void> {
     const config = AppConfig.getInstance();
 
-    mongoose.connection.on('connected', () => {
+    try {
+      this._client = new PrismaClient({
+        datasources: {
+          db: {
+            url: config.databaseUrl,
+          },
+        },
+        log: config.isDevelopment ? ['query', 'info', 'warn', 'error'] : ['error'],
+      });
+
+      await this._client.$connect();
       this._isConnected = true;
-      logger.info('✅ MongoDB connected via Mongoose');
-    });
-
-    mongoose.connection.on('disconnected', () => {
+      logger.info('✅ Database connected via Prisma (PostgreSQL)');
+    } catch (error: any) { // Explicitly any or handle correctly (Prisma errors can be complex)
+      logger.error('❌ Database connection error:', error);
       this._isConnected = false;
-      logger.warn('⚠️  MongoDB disconnected');
-    });
-
-    mongoose.connection.on('error', (err) => {
-      logger.error('❌ MongoDB connection error:', err);
-    });
-
-    await mongoose.connect(config.mongodbUri, {
-      socketTimeoutMS: 45000,
-    });
-
-    this._isConnected = true;
+      throw error;
+    }
   }
 
   async disconnect(): Promise<void> {
-    await mongoose.disconnect();
-    this._isConnected = false;
-    logger.info('🔌 MongoDB disconnected');
+    if (this._client) {
+      await this._client.$disconnect();
+      this._isConnected = false;
+      logger.info('🔌 Database disconnected');
+    }
   }
 
   async healthCheck(): Promise<boolean> {
     try {
-      if (mongoose.connection.readyState !== 1) return false;
-      await mongoose.connection.db?.admin().ping();
+      if (!this._isConnected || !this._client) return false;
+      await this._client.$queryRaw`SELECT 1`;
       return true;
     } catch {
       return false;

@@ -1,56 +1,154 @@
+import { PrismaClient } from '@prisma/client';
+import { DatabaseService } from '../database/DatabaseService';
 import { IUserRepository, CreateUserDTO, UpdateUserDTO } from '../../domain/repositories/IUserRepository';
-import { User, UserPublicProfile } from '../../domain/entities/User';
-import { UserModel } from '../database/schemas/UserSchema';
+import { User, UserPublicProfile, UserStatus } from '../../domain/entities/User';
 
-export class MongoUserRepository implements IUserRepository {
+export class UserRepository implements IUserRepository {
+  private prisma: PrismaClient;
+
+  constructor() {
+    this.prisma = DatabaseService.getInstance().client;
+  }
+
   async findById(id: string): Promise<User | null> {
-    return UserModel.findById(id).lean() as Promise<User | null>;
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+    return user ? this.mapToDomain(user) : null;
+  }
+
+  async findByIds(ids: string[]): Promise<User[]> {
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: ids } },
+    });
+    return users.map(u => this.mapToDomain(u));
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return UserModel.findOne({ email }).lean() as Promise<User | null>;
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    return user ? this.mapToDomain(user) : null;
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    return UserModel.findOne({ username }).lean() as Promise<User | null>;
+    const user = await this.prisma.user.findUnique({
+      where: { username },
+    });
+    return user ? this.mapToDomain(user) : null;
+  }
+
+  async findByGameUid(gameUid: string): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { gameUid },
+    });
+    return user ? this.mapToDomain(user) : null;
   }
 
   async create(data: CreateUserDTO): Promise<User> {
-    const user = new UserModel(data);
-    await user.save();
-    return user.toJSON() as User;
+    const user = await this.prisma.user.create({
+      data: {
+        username: data.username,
+        email: data.email,
+        passwordHash: data.passwordHash,
+        displayName: data.displayName,
+        gameUid: data.gameUid,
+      },
+    });
+    return this.mapToDomain(user);
   }
 
   async update(id: string, data: UpdateUserDTO): Promise<User> {
-    const user = await UserModel.findByIdAndUpdate(id, data, { new: true }).lean();
-    if (!user) throw new Error('User not found');
-    return user as User;
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: {
+        displayName: data.displayName,
+        avatarUrl: data.avatarUrl,
+        bio: data.bio,
+        status: data.status as any,
+      },
+    });
+    return this.mapToDomain(user);
   }
 
   async delete(id: string): Promise<void> {
-    await UserModel.findByIdAndDelete(id);
-  }
-
-  async searchByUsername(query: string, limit = 20): Promise<UserPublicProfile[]> {
-    const users = await UserModel.find({ username: new RegExp(query, 'i') })
-      .select('id username displayName avatarUrl bio status level')
-      .limit(limit)
-      .lean();
-    
-    return users.map(u => {
-      const publicProfile: any = { ...u, id: (u as any)._id.toString() };
-      delete publicProfile._id;
-      return publicProfile as UserPublicProfile;
+    await this.prisma.user.delete({
+      where: { id },
     });
   }
 
+  async searchByUsername(query: string, limit = 20): Promise<UserPublicProfile[]> {
+    const users = await this.prisma.user.findMany({
+      where: {
+        username: {
+          contains: query,
+          mode: 'insensitive',
+        },
+      },
+      take: limit,
+      select: {
+        id: true,
+        gameUid: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        bio: true,
+        status: true,
+        level: true,
+      },
+    });
+    
+    return users.map(u => ({
+      ...u,
+      status: u.status as UserStatus,
+    }));
+  }
+
   async addXp(id: string, amount: number): Promise<User> {
-    const user = await UserModel.findByIdAndUpdate(
-      id,
-      { $inc: { xp: amount } },
-      { new: true }
-    ).lean();
-    if (!user) throw new Error('User not found');
-    return user as User;
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: {
+        xp: { increment: amount },
+      },
+    });
+    return this.mapToDomain(user);
+  }
+
+  async updateCoins(id: string, amount: number): Promise<User> {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: {
+        coins: { increment: amount },
+      },
+    });
+    return this.mapToDomain(user);
+  }
+
+  async updateDailyRewards(id: string, dailyRewards: any): Promise<User> {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: {
+        dailyRewards: dailyRewards,
+      },
+    });
+    return this.mapToDomain(user);
+  }
+
+  private mapToDomain(user: any): User {
+    return {
+      ...user,
+      status: user.status as UserStatus,
+      // Use persisted dailyRewards or fallback to default structure
+      dailyRewards: (user.dailyRewards as any) || {
+        lastResetDate: new Date().toISOString().split('T')[0],
+        hasCheckedIn: false,
+        dailyCoinsEarned: 0,
+        matchesPlayed: 0,
+        friendMatchesPlayed: 0,
+        claimedTasks: [],
+      },
+    } as User;
   }
 }
+
+

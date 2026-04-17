@@ -25,7 +25,9 @@ async function bootstrap(): Promise<void> {
     // ── Connect to Redis ─────────────────────────────────
     const redis = RedisService.getInstance();
     await redis.connect();
-    logger.info('✅ Redis connected');
+    if (redis.isConnected) {
+      logger.info('✅ Redis connected');
+    }
 
     // ── Initialize Express App ───────────────────────────
     const app = createApp();

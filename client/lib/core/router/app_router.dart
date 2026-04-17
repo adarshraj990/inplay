@@ -53,7 +53,7 @@ class AppRouter {
         name: 'home',
         builder: (_, __) => Scaffold(
           appBar: AppBar(
-            title: const Text('WePlay'),
+            title: const Text('Indplay'),
             actions: [
               Builder(
                 builder: (context) => IconButton(

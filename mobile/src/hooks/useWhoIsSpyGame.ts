@@ -39,7 +39,7 @@ export const useWhoIsSpyGame = (sessionId: string, userId: string) => {
     const socket = io(SOCKET_URL_INTERNAL, {
       transports: ['websocket'],
       query: { userId },
-    });
+    } as any);
     socketRef.current = socket;
 
     // 2. Join Session
@@ -81,7 +81,6 @@ export const useWhoIsSpyGame = (sessionId: string, userId: string) => {
         socket.off('game:sync');
         socket.off('game:whoisspy:role_data');
         socket.off('game:game_over');
-        socket.off('disconnect');
         socket.disconnect();
       }
       socketRef.current = null;

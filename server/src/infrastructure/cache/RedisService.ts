@@ -11,7 +11,7 @@ export class RedisService {
   private client: RedisClientType | null = null;
   private subscriber: RedisClientType | null = null;
   private publisher: RedisClientType | null = null;
-  private isConnected = false;
+  public isConnected = false;
 
   private constructor() {}
 

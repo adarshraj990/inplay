@@ -2,7 +2,7 @@ import { Server as SocketServer } from 'socket.io';
 import { Logger } from '../../shared/utils/Logger';
 import { RewardService } from '../services/RewardService';
 import { AgoraService } from '../services/AgoraService';
-import { UserModel } from '../../infrastructure/database/schemas/UserSchema';
+import { UserRepository } from '../../infrastructure/repositories/UserRepository';
 import { User } from '../../domain/entities/User';
 
 const logger = Logger.getInstance();
@@ -58,9 +58,9 @@ export class WhoIsSpyManager {
 
     const agora = AgoraService.getInstance();
     
-    // Fetch user levels from DB
-    const users = await UserModel.find({ _id: { $in: userIds } });
-    const userMap = new Map<string, User>(users.map(u => [u._id.toString(), u as unknown as User]));
+    const userRepository = new UserRepository();
+    const users = await userRepository.findByIds(userIds);
+    const userMap = new Map<string, User>(users.map(u => [u.id.toString(), u]));
 
     this.players = userIds.map((userId, index) => {
       const u = userMap.get(userId);

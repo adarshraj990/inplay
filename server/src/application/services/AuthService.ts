@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { RegisterDTO, LoginDTO, AuthResponseDTO } from '../dtos/AuthDTOs';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { MongoUserRepository } from '../../infrastructure/repositories/UserRepository';
+import { UserRepository } from '../../infrastructure/repositories/UserRepository';
 import { AppConfig } from '../../shared/config/AppConfig';
 import { UnauthorizedError, ConflictError } from '../../shared/errors/AppError';
 
@@ -11,7 +11,7 @@ export class AuthService {
   private config: AppConfig;
 
   constructor() {
-    this.userRepository = new MongoUserRepository();
+    this.userRepository = new UserRepository();
     this.config = AppConfig.getInstance();
   }
 
@@ -25,11 +25,15 @@ export class AuthService {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(data.password, salt);
 
+    // Generate unique 8-digit UID
+    const gameUid = await this.generateUniqueGameUid();
+
     const user = await this.userRepository.create({
       username: data.username,
       email: data.email,
       passwordHash,
       displayName: data.displayName,
+      gameUid,
     });
 
     return this.generateAuthResponse(user);
@@ -57,6 +61,18 @@ export class AuthService {
     }
   }
 
+  private async generateUniqueGameUid(): Promise<string> {
+    let attempts = 0;
+    while (attempts < 10) {
+      // 10,000,000 to 99,999,999
+      const uid = Math.floor(10000000 + Math.random() * 90000000).toString();
+      const existing = await this.userRepository.findByGameUid(uid);
+      if (!existing) return uid;
+      attempts++;
+    }
+    throw new Error('Failed to generate unique Game UID');
+  }
+
   private generateAuthResponse(user: any): AuthResponseDTO {
     const accessToken = jwt.sign({ sub: user.id }, this.config.jwtSecret as string, {
       expiresIn: this.config.jwtExpiresIn as any,
@@ -67,7 +83,8 @@ export class AuthService {
     });
 
     const publicProfile = {
-      id: user.id || user._id?.toString(),
+      id: user.id.toString(),
+      gameUid: user.gameUid,
       username: user.username,
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
