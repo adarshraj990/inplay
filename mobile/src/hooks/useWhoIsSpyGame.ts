@@ -76,6 +76,11 @@ export const useWhoIsSpyGame = (sessionId: string, userId: string) => {
       setState(prev => ({ ...prev, voteStats: data }));
     });
 
+    socket.on('game:vote_tie', (data: { candidates: string[] }) => {
+      // The server will already reset phase, but we can use this for UI
+      setState(prev => ({ ...prev, timer: 5 }));
+    });
+
     socket.on('game:whoisspy:role_data', (data: { role: 'Citizen' | 'Spy', word: string, agoraToken?: string }) => {
       setState(prev => ({ 
         ...prev, 

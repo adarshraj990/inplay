@@ -23,6 +23,11 @@ export class WordService {
     { citizenWord: 'Cricket', spyWord: 'Baseball' },
     { citizenWord: 'Iron Man', spyWord: 'Batman' },
     { citizenWord: 'Tesla', spyWord: 'Ferrari' },
+    { citizenWord: 'Ice Cream', spyWord: 'Frozen Yogurt' },
+    { citizenWord: 'Harry Potter', spyWord: 'Lord of the Rings' },
+    { citizenWord: 'Mount Everest', spyWord: 'K2' },
+    { citizenWord: 'Guitar', spyWord: 'Ukulele' },
+    { citizenWord: 'Mars', spyWord: 'Venus' },
   ];
 
   private constructor() {}

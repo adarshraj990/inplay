@@ -76,21 +76,26 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [bannerText, setBannerText] = useState<string | null>(null);
 
   // ── Handle Phase Transitions (UX) ──────────────────
-  React.useEffect(() => {
+  useEffect(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     
-    if (phase === 'DISCUSSION') setBannerText('DISCUSSION START');
-    else if (phase === 'VOTING') setBannerText('VOTING OPEN');
-    else if (phase === 'RESULT') setBannerText('GAME OVER');
-    else setBannerText(null);
+    let text: string | null = null;
+    if (phase === 'DISCUSSION') {
+      // If we were just in voting, it's a tie
+      text = timer === 5 ? 'VOTING TIE!' : 'DISCUSSION START';
+    }
+    else if (phase === 'VOTING') text = 'VOTING OPEN';
+    else if (phase === 'RESULT') text = 'GAME OVER';
+    else text = null;
 
-    if (phase !== 'LOBBY') {
-      const timer = setTimeout(() => {
+    if (text) {
+      setBannerText(text);
+      const timerId = setTimeout(() => {
         setBannerText(null);
       }, 3000);
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timerId);
     }
-  }, [phase]);
+  }, [phase, timer]);
 
   const startGame = useCallback(() => {
     // Collect all valid player IDs from live players
@@ -241,11 +246,27 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         {/* ── Action Footer ── */}
         <View style={styles.footer}>
           {phase === 'LOBBY' && isHost ? (
-            <TouchableOpacity style={styles.startBtn} onPress={startGame}>
-              <LinearGradient colors={Colors.gradientSaffron} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.btnGradient}>
-                <Text style={styles.btnText}>Start Game</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+            <View style={{ gap: 8 }}>
+              {livePlayers.length < 4 && (
+                <Text style={styles.minPlayersText}>Min. 4 players required to start</Text>
+              )}
+              <TouchableOpacity 
+                style={[styles.startBtn, livePlayers.length < 4 && styles.btnDisabled]} 
+                onPress={startGame}
+                disabled={livePlayers.length < 4}
+              >
+                <LinearGradient 
+                  colors={livePlayers.length < 4 ? [Colors.surface, Colors.surface] : Colors.gradientSaffron} 
+                  start={{ x: 0, y: 0 }} 
+                  end={{ x: 1, y: 0 }} 
+                  style={styles.btnGradient}
+                >
+                  <Text style={[styles.btnText, livePlayers.length < 4 && { color: Colors.textMuted }]}>
+                    Start Game
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           ) : (
             <View style={styles.statusBox}>
               <Text style={styles.statusText}>
@@ -378,6 +399,20 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 212, 200, 0.5)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
+  },
+  minPlayersText: {
+    color: Colors.saffron,
+    fontSize: 10,
+    fontWeight: '800',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  btnDisabled: {
+    opacity: 0.6,
+    elevation: 0,
+    borderColor: Colors.surfaceBorder,
+    borderWidth: 1,
   },
 
   timerBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: 'rgba(0, 212, 200, 0.1)', paddingVertical: 8, marginBottom: Spacing.md },

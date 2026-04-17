@@ -113,6 +113,10 @@ export class WhoIsSpyManager {
     // ── 1. Determine Roles & Words ─────────────────────
     this.phase = 'REVEAL'; // Start reveal phase immediately
     const playerCount = userIds.length;
+    if (playerCount < 4) {
+      logger.warn(`🚫 Attempted to start game with only ${playerCount} players in ${this.sessionId}. Min 4 required.`);
+      return;
+    }
     const spyCount = playerCount >= 8 ? 2 : 1;
     
     const wordService = WordService.getInstance();
@@ -299,22 +303,33 @@ export class WhoIsSpyManager {
     });
 
     let maxVotes = 0;
-    let expelledId = '';
+    let candidates: string[] = [];
+
     for (const [id, count] of Object.entries(voteCounts)) {
       if (count > maxVotes) {
         maxVotes = count;
-        expelledId = id;
+        candidates = [id];
+      } else if (count === maxVotes) {
+        candidates.push(id);
       }
     }
 
-    const expelledPlayer = this.players.find(p => p.userId === expelledId);
     let winner: 'Citizens' | 'Spy' | null = null;
+    let expelledId = '';
 
-    if (expelledPlayer) {
-      expelledPlayer.isAlive = false;
-      if (expelledPlayer.role === 'Spy') {
-        winner = 'Citizens';
+    // Tie-breaking: No one expelled if there's a tie
+    if (candidates.length === 1) {
+      expelledId = candidates[0];
+      const expelledPlayer = this.players.find(p => p.userId === expelledId);
+      if (expelledPlayer) {
+        expelledPlayer.isAlive = false;
+        if (expelledPlayer.role === 'Spy') {
+          winner = 'Citizens';
+        }
       }
+    } else {
+      logger.info(`⚖️ Vote tie in session ${this.sessionId}. No one expelled.`);
+      this.io.of('/game').to(`game:whoisspy:${this.sessionId}`).emit('game:vote_tie', { candidates });
     }
 
     // Check survival condition
