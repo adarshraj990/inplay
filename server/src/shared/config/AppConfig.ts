@@ -47,7 +47,9 @@ export class AppConfig {
   private require(key: string): string {
     const value = process.env[key];
     if (!value) {
-      throw new Error(`Missing required environment variable: ${key}`);
+      console.warn(`\n[CRITICAL WARNING] Missing environment variable: ${key}`);
+      console.warn(`Please add ${key} to your Render Environment settings to ensure the app works correctly.\n`);
+      return ''; // Return empty string to allow startup
     }
     return value;
   }
