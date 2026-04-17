@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Dimensions, Animated as RNAnimated, Easing
+  Dimensions, Animated as RNAnimated, Easing, Platform
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +25,7 @@ const { width } = Dimensions.get('window');
 
 // ── Mock Visuals (Will be replaced by real avatars later) ───────────────────
 const ICONS = ['logo-octocat', 'rocket', 'flask', 'planet', 'construct', 'bulb'];
+const USERS = ['Cipher', 'Nova', 'Rex', 'Echo', 'Viper', 'Ghost'];
 
 const SpyLobby: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { phase, timer, players, simulateBots } = useWhoIsSpyGame('SPY99', '1'); // Session ID #SPY99
@@ -44,7 +46,7 @@ const SpyLobby: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar style="light" />
       <LinearGradient
         colors={[Colors.background, Colors.deepBlue]}
         style={StyleSheet.absoluteFill}

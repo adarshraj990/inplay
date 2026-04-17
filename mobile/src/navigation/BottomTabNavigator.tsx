@@ -24,6 +24,12 @@ const TAB_ICONS: Record<TabRoute, { active: keyof typeof Ionicons.glyphMap; inac
 
 import { useNotificationStats } from '../hooks/useNotificationStats';
 
+interface TabIconProps {
+  route: TabRoute;
+  focused: boolean;
+  color: string;
+}
+
 const TabIcon: React.FC<TabIconProps> = ({ route, focused, color }) => {
   const icons = TAB_ICONS[route];
   const unreadCount = useNotificationStats();

@@ -13,6 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.indplay.app",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Indplay needs access to your microphone for in-game voice chat during 'Who Is The Spy'."
       }

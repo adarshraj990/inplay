@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
   TouchableOpacity, StatusBar, Image,
@@ -72,6 +72,7 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   useAgoraVoice('1', agoraToken, channelName, phase, currentSpeakerId);
 
   const [profileVisible, setProfileVisible] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
   const [isHost] = useState(true);
   const [bannerText, setBannerText] = useState<string | null>(null);
 
@@ -120,9 +121,9 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const handlePlayAgain = useCallback(() => {
     if (isHost) {
-      triggerStart(MOCK_PLAYERS.map(p => p.id));
+      triggerStart(livePlayers.map(p => p.userId));
     }
-  }, [isHost, triggerStart]);
+  }, [isHost, triggerStart, livePlayers]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

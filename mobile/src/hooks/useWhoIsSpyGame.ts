@@ -135,6 +135,11 @@ export const useWhoIsSpyGame = (sessionId: string, userId: string) => {
     socketRef.current?.emit('game:whoisspy:skip_turn', { sessionId });
   }, [sessionId]);
 
+  // Debug feature: Simulate 5 other bots joining
+  const simulateBots = useCallback(() => {
+    socketRef.current?.emit('game:debug:fill_bots', { sessionId });
+  }, [sessionId]);
+
   // Handle Agora Joining
   useEffect(() => {
     if (state.agoraToken && state.channelName) {
