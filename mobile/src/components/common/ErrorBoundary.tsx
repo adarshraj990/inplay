@@ -38,42 +38,7 @@ class GlobalErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <SafeAreaView style={styles.container}>
-          <View style={styles.content}>
-            <View style={styles.iconContainer}>
-              <LinearGradient
-                colors={[Colors.danger, '#991B1B']}
-                style={styles.circle}
-              >
-                <Ionicons name="alert-circle" size={50} color="white" />
-              </LinearGradient>
-            </View>
-
-            <Text style={styles.title}>Something went wrong</Text>
-            <Text style={styles.subtitle}>
-              An unexpected error occurred in the game interface. We've been notified.
-            </Text>
-
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText} numberOfLines={3}>
-                {String(this.state.error?.message || this.state.error || 'Unknown Rendering Error')}
-              </Text>
-            </View>
-
-            <TouchableOpacity 
-              style={styles.button} 
-              onPress={this.handleReset}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={Colors.gradientTurquoise}
-                style={styles.gradient}
-              >
-                <Text style={styles.buttonText}>Reload Interface</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
+        <SafeAreaView style={styles.container}><View style={styles.content}><View style={styles.iconContainer}><LinearGradient colors={[Colors.danger, '#991B1B']} style={styles.circle}><Ionicons name="alert-circle" size={50} color="white" /></LinearGradient></View><Text style={styles.title}>Something went wrong</Text><Text style={styles.subtitle}>An unexpected error occurred in the game interface. We've been notified.</Text><View style={styles.errorBox}><Text style={styles.errorText} numberOfLines={3}>{String(this.state.error?.message || this.state.error || 'Unknown Rendering Error')}</Text></View><TouchableOpacity style={styles.button} onPress={this.handleReset} activeOpacity={0.8}><LinearGradient colors={Colors.gradientTurquoise} style={styles.gradient}><Text style={styles.buttonText}>Reload Interface</Text></LinearGradient></TouchableOpacity></View></SafeAreaView>
       );
     }
 

@@ -44,7 +44,7 @@ const TabIcon: React.FC<TabIconProps> = ({ route, focused, color }) => {
           size={focused ? 26 : 22}
           color={color}
         />
-        {badge && badge > 0 && (
+        {!!badge && badge > 0 && (
           <View style={tabIconStyles.badge}>
             <Text style={tabIconStyles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
           </View>

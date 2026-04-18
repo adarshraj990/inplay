@@ -200,7 +200,7 @@ interface SectionHeaderProps { title: string; linkLabel?: string; }
 const SectionHeader: React.FC<SectionHeaderProps> = ({ title, linkLabel }) => (
   <View style={hdrStyles.row}>
     <Text style={hdrStyles.title}>{title}</Text>
-    {linkLabel && (
+    {!!linkLabel && (
       <TouchableOpacity activeOpacity={0.7}>
         <Text style={hdrStyles.link}>{linkLabel}</Text>
       </TouchableOpacity>

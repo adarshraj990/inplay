@@ -148,7 +148,7 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
 
         <View style={styles.main}>
-          {bannerText && (
+          {!!bannerText && (
             <View style={styles.bannerOverlay}>
               <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,0)']} style={styles.bannerBg}>
                 <Text style={styles.bannerText}>{bannerText}</Text>
