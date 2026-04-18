@@ -5,6 +5,9 @@ workflows:
     instance_type: mac_mini_m2
     working_directory: mobile
     environment:
+      vars:
+        CI: 1
+        EXPO_NO_TELEMETRY: 1
       node: latest
     scripts:
       - name: Install dependencies
@@ -12,7 +15,7 @@ workflows:
           npm install
       - name: Expo Prebuild
         script: |
-          npx expo prebuild --platform android --no-interactive
+          npx expo prebuild --platform android
       - name: Build Android Debug APK
         script: |
           cd android && ./gradlew assembleDebug
