@@ -97,17 +97,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (username: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await apiService.post(CONFIG.ENDPOINTS.REGISTER, { username, email, password });
-      if (response.data.success) {
-        const { token: newToken, user: userData } = response.data.data;
-        setToken(newToken);
-        setUser(userData);
-        await AsyncStorage.setItem('auth_token', newToken);
-        await AsyncStorage.setItem('auth_user', JSON.stringify(userData));
+        const authData = response.data.data || response.data;
+        const newToken = authData.token;
+        const userData = authData.user;
+
+        if (newToken && userData) {
+          setToken(newToken);
+          setUser(userData);
+          await AsyncStorage.setItem('auth_token', newToken);
+          await AsyncStorage.setItem('auth_user', JSON.stringify(userData));
+        } else {
+          console.error('Registration successful but missing token/user details:', authData);
+          throw new Error('Registration successful but session could not be established. Please login.');
+        }
       } else {
         throw new Error(response.data.message || 'Registration failed');
       }
     } catch (e: any) {
+      console.error('Registration process error:', e);
       throw new Error(e.response?.data?.message || e.message || 'Registration failed');
     } finally {
       setIsLoading(false);

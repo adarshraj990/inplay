@@ -147,10 +147,15 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginText}>Login</Text>
-            </TouchableOpacity>
+            <Text style={styles.footerText}>
+              Already have an account?{' '}
+              <Text 
+                style={styles.loginText} 
+                onPress={() => navigation.navigate('Login')}
+              >
+                Login
+              </Text>
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
