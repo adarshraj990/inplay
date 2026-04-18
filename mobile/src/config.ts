@@ -20,8 +20,6 @@ export const CONFIG = {
     ROOMS: `${API_BASE_URL}/rooms`,
     STATS: `${API_BASE_URL}/stats/overview`,
     FRIENDS: `${API_BASE_URL}/friends/list`,
-    FRIENDS_PENDING: `${API_BASE_URL}/friends/pending`,
-    FRIENDS_RESPOND: `${API_BASE_URL}/friends/respond`,
     LOGIN: `${API_BASE_URL}/auth/login`,
     REGISTER: `${API_BASE_URL}/auth/register`,
     TASKS: `${API_BASE_URL}/rewards/tasks`,

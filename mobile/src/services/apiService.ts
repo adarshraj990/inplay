@@ -19,10 +19,18 @@ apiService.interceptors.response.use(
   (error) => {
     console.log('--- Indplay Network Error ---');
     if (error.response) {
-      // Server responded with a status code outside the 2xx range
+      const contentType = error.response.headers['content-type'] || '';
+      
+      // Handle Render warming up or standard HTML error pages
+      if (contentType.includes('text/html') || error.response.status === 503 || error.response.status === 502) {
+        error.message = 'Server is warming up, please try again in a few seconds.';
+      } else if (error.response.data?.message) {
+        error.message = error.response.data.message;
+      }
+      
       console.log('Response Error:', {
         status: error.response.status,
-        data: error.response.data,
+        data: contentType.includes('text/html') ? '[HTML Content]' : error.response.data,
       });
     } else if (error.request) {
       // Request was made but no response was received

@@ -11,6 +11,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../navigation/AuthNavigator';
 import { useAuth } from '../context/AuthContext';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
+import ErrorBanner from '../components/common/ErrorBanner';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Signup'>;
 
@@ -20,26 +21,28 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { register, isLoading } = useAuth();
 
   const handleSignup = async () => {
     if (!username || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setError('Please fill in all fields');
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      setError('Password must be at least 6 characters');
       return;
     }
     
+    setError(null);
     try {
       await register(username, email, password);
-    } catch (error: any) {
-      Alert.alert('Signup Failed', error.message);
+    } catch (e: any) {
+      setError(e.message || 'Signup failed. Please try again.');
     }
   };
 
@@ -63,6 +66,12 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           <View style={styles.form}>
+            <ErrorBanner 
+              message={error || ''} 
+              visible={!!error} 
+              onDismiss={() => setError(null)} 
+            />
+            
             <View style={styles.inputContainer}>
               <Ionicons name="person-outline" size={20} color={Colors.textMuted} style={styles.inputIcon} />
               <TextInput

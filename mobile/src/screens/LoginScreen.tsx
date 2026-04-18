@@ -11,6 +11,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../navigation/AuthNavigator';
 import { useAuth } from '../context/AuthContext';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
+import ErrorBanner from '../components/common/ErrorBanner';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -18,17 +19,20 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { login, isLoading } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setError('Please fill in all fields');
       return;
     }
+    
+    setError(null);
     try {
       await login(email, password);
-    } catch (error: any) {
-      Alert.alert('Login Failed', error.message);
+    } catch (e: any) {
+      setError(e.message || 'Login failed. Please try again.');
     }
   };
 
@@ -53,6 +57,12 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           <View style={styles.form}>
+            <ErrorBanner 
+              message={error || ''} 
+              visible={!!error} 
+              onDismiss={() => setError(null)} 
+            />
+            
             <View style={styles.inputContainer}>
               <Ionicons name="mail-outline" size={20} color={Colors.textMuted} style={styles.inputIcon} />
               <TextInput
