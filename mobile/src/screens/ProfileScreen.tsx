@@ -7,7 +7,7 @@ import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { CONFIG } from '../config';
 import apiService from '../services/apiService';
 
-const ProfileScreen: React.FC = () => {
+const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 
@@ -86,7 +86,11 @@ const ProfileScreen: React.FC = () => {
 
         {/* Menu */}
         <View style={styles.menuSection}>
-          <TouchableOpacity activeOpacity={0.75} style={styles.menuRow}>
+          <TouchableOpacity 
+            activeOpacity={0.75} 
+            style={styles.menuRow}
+            onPress={() => navigation.navigate('EditProfile', { initialUser: user })}
+          >
             <View style={[styles.menuIcon, { backgroundColor: Colors.surfaceCard }]}>
               <Ionicons name="person-outline" size={20} color={Colors.textSecondary} />
             </View>

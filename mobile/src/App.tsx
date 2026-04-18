@@ -10,6 +10,9 @@ import AuthNavigator from './navigation/AuthNavigator';
 import WhoIsSpyRoomScreen from './screens/WhoIsSpyRoomScreen';
 import SpyLobby from './screens/game/SpyLobby';
 import RoleAssignment from './screens/game/RoleAssignment';
+import GlobalErrorBoundary from './components/common/ErrorBoundary';
+import SocialRequestsScreen from './screens/SocialRequestsScreen';
+import EditProfileScreen from './screens/EditProfileScreen';
 import { EmoteProvider } from './context/EmoteContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Colors } from './constants/theme';
@@ -37,6 +40,16 @@ function RootNavigator() {
           <Stack.Screen name="SpyLobby" component={SpyLobby} />
           <Stack.Screen name="RoleAssignment" component={RoleAssignment} />
           <Stack.Screen name="WhoIsSpyRoom" component={WhoIsSpyRoomScreen} />
+          <Stack.Screen 
+            name="SocialRequests" 
+            component={SocialRequestsScreen} 
+            options={{ animation: 'fade_from_bottom' }}
+          />
+          <Stack.Screen 
+            name="EditProfile" 
+            component={EditProfileScreen} 
+            options={{ animation: 'fade_from_bottom' }}
+          />
         </>
       )}
     </Stack.Navigator>
@@ -45,33 +58,35 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <NavigationContainer
-          theme={{
-            dark: true,
-            colors: {
-              primary:       Colors.turquoise,
-              background:    Colors.background,
-              card:          Colors.surface,
-              text:          Colors.textPrimary,
-              border:        Colors.surfaceBorder,
-              notification:  Colors.saffron,
-            },
-            fonts: {
-              regular: { fontFamily: 'System', fontWeight: '400' },
-              medium:  { fontFamily: 'System', fontWeight: '500' },
-              bold:    { fontFamily: 'System', fontWeight: '700' },
-              heavy:   { fontFamily: 'System', fontWeight: '900' },
-            },
-          }}
-        >
-          <StatusBar style="light" backgroundColor={Colors.background} />
-          <EmoteProvider>
-            <RootNavigator />
-          </EmoteProvider>
-        </NavigationContainer>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <GlobalErrorBoundary>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <NavigationContainer
+            theme={{
+              dark: true,
+              colors: {
+                primary:       Colors.turquoise,
+                background:    Colors.background,
+                card:          Colors.surface,
+                text:          Colors.textPrimary,
+                border:        Colors.surfaceBorder,
+                notification:  Colors.saffron,
+              },
+              fonts: {
+                regular: { fontFamily: 'System', fontWeight: '400' },
+                medium:  { fontFamily: 'System', fontWeight: '500' },
+                bold:    { fontFamily: 'System', fontWeight: '700' },
+                heavy:   { fontFamily: 'System', fontWeight: '900' },
+              },
+            }}
+          >
+            <StatusBar style="light" backgroundColor={Colors.background} />
+            <EmoteProvider>
+              <RootNavigator />
+            </EmoteProvider>
+          </NavigationContainer>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </GlobalErrorBoundary>
   );
 }

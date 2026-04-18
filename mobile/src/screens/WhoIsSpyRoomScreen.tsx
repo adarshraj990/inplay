@@ -25,6 +25,7 @@ import PlayerProfileModal from '../components/game/PlayerProfileModal';
 import { useWhoIsSpyGame } from '../hooks/useWhoIsSpyGame';
 import { useAgoraVoice } from '../hooks/useAgoraVoice';
 import { CONFIG } from '../config';
+import apiService from '../services/apiService';
 import * as Haptics from 'expo-haptics';
 import { LayoutAnimation, Platform, UIManager } from 'react-native';
 

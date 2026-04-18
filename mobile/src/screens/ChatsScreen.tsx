@@ -6,16 +6,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { CONFIG } from '../config';
 import apiService from '../services/apiService';
+import { useNotificationStats } from '../hooks/useNotificationStats';
 
-const ChatsScreen: React.FC = () => {
+const ChatsScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [chats, setChats] = useState<any[]>([]);
+  const unreadRequests = useNotificationStats();
 
   useEffect(() => {
     const fetchFriends = async () => {
       try {
         setLoading(true);
-        const response = await apiService.get(CONFIG.ENDPOINTS.FRIENDS);
+        const response = await apiService.get(CONFIG.ENDPOINTS.SOCIAL.FRIENDS);
         if (response.data.success) {
           // Map friends to chat format
           const formatted = response.data.data.map((f: any) => ({
@@ -43,11 +45,24 @@ const ChatsScreen: React.FC = () => {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>Chats</Text>
-        <TouchableOpacity style={styles.composeBtn}>
-          <LinearGradient colors={Colors.gradientTurquoise} style={styles.composeGrad}>
-            <Ionicons name="create" size={18} color={Colors.surface} />
-          </LinearGradient>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity 
+            style={styles.requestBtn} 
+            onPress={() => navigation.navigate('SocialRequests')}
+          >
+            <Ionicons name="people-outline" size={22} color={Colors.textSecondary} />
+            {unreadRequests > 0 && (
+              <View style={styles.requestBadge}>
+                <Text style={styles.badgeText}>{unreadRequests}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.composeBtn}>
+            <LinearGradient colors={Colors.gradientTurquoise} style={styles.composeGrad}>
+              <Ionicons name="create" size={18} color={Colors.surface} />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {loading ? (
@@ -75,7 +90,7 @@ const ChatsScreen: React.FC = () => {
                   style={styles.avatar}
                 >
                   <Text style={styles.avatarText}>
-                    {item.group ? '👥' : item.name[0]}
+                    {item.group ? '👥' : (item.name ? item.name[0] : '?')}
                   </Text>
                 </LinearGradient>
                 {item.online && <View style={styles.onlineDot} />}
@@ -107,6 +122,9 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.md, paddingTop: Spacing.lg, paddingBottom: Spacing.md },
   title: { fontSize: Typography.h1, fontWeight: '800', color: Colors.textPrimary },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
+  requestBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.surfaceCard, borderRadius: Radius.sm, position: 'relative' },
+  requestBadge: { position: 'absolute', top: -4, right: -4, backgroundColor: Colors.saffron, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, borderWidth: 1.5, borderColor: Colors.background },
   composeBtn: { borderRadius: Radius.sm, overflow: 'hidden' },
   composeGrad: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
   list: { paddingBottom: Spacing.xxl },
