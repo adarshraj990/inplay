@@ -34,11 +34,20 @@ export class RedisService {
     }
 
     try {
-      const redisConfig = {
+      const isTLS = config.redisUrl.startsWith('rediss://');
+      const redisConfig: any = {
         url: config.redisUrl,
         password: config.redisPassword || undefined,
       };
 
+      if (isTLS) {
+        redisConfig.socket = {
+          tls: true,
+          rejectUnauthorized: false, // Often needed for managed Redis services on Render
+        };
+      }
+
+      logger.info(`🔄 Attempting to connect to Redis (${isTLS ? 'Secure' : 'Insecure'})...`);
       this.client = createClient(redisConfig) as RedisClientType;
       this.subscriber = this.client.duplicate() as RedisClientType;
       this.publisher = this.client.duplicate() as RedisClientType;

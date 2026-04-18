@@ -29,6 +29,7 @@ const logger = Logger.getInstance();
 
 export function createApp(): Application {
   const app = express();
+  app.set('trust proxy', 1); 
   const config = AppConfig.getInstance();
 
   // ── Security Middlewares ─────────────────────────────
