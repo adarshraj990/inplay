@@ -226,7 +226,7 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                           <Text style={[styles.playerName, isSpeaking && styles.speakingName]}>
                             {player.userId === '1' ? 'You' : name}
                           </Text>
-                          {player.level && (
+                          {!!player.level && (
                             <View style={styles.inlineLevel}>
                               <Text style={styles.inlineLevelText}>L{player.level}</Text>
                             </View>

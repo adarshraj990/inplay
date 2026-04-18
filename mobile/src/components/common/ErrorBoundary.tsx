@@ -56,7 +56,7 @@ class GlobalErrorBoundary extends Component<Props, State> {
 
             <View style={styles.errorBox}>
               <Text style={styles.errorText} numberOfLines={3}>
-                {this.state.error?.toString() || 'Unknown Rendering Error'}
+                {String(this.state.error?.message || this.state.error || 'Unknown Rendering Error')}
               </Text>
             </View>
 
