@@ -1,6 +1,6 @@
 workflows:
-  android-debug-apk:
-    name: Android Debug APK
+  android-release-apk:
+    name: Android Release APK
     max_build_duration: 60
     instance_type: mac_mini_m2
     working_directory: mobile
@@ -16,11 +16,12 @@ workflows:
       - name: Expo Prebuild
         script: |
           npx expo prebuild --platform android
-      - name: Build Android Debug APK
+      - name: Build Android Release APK
         script: |
-          cd android && ./gradlew assembleDebug
+          npx expo export --platform android
+          cd android && ./gradlew assembleRelease
     artifacts:
-      - android/app/build/outputs/apk/debug/*.apk
+      - android/app/build/outputs/apk/release/*.apk
     publishing:
       email:
         recipients:
