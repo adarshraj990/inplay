@@ -48,7 +48,19 @@ export class WhoIsSpyManager {
     if (!this.sessions.has(sessionId)) {
       this.sessions.set(sessionId, new WhoIsSpyManager(sessionId, io));
     }
-    return this.sessions.get(sessionId)!;
+    // Cancel any pending destruction if the session is accessed again
+    const session = this.sessions.get(sessionId)!;
+    session.cancelDestruction();
+    return session;
+  }
+
+  public static destroySession(sessionId: string): void {
+    if (this.sessions.has(sessionId)) {
+      const session = this.sessions.get(sessionId)!;
+      session.stopTimer();
+      this.sessions.delete(sessionId);
+      logger.info(`🧹 [Memory] Session ${sessionId} has been destroyed and cleared from memory.`);
+    }
   }
 
   public static findOrCreateMatch(io: SocketServer): string {
@@ -361,15 +373,37 @@ export class WhoIsSpyManager {
       
       // Update DB with winner
       await this.gameSessionRepository.setWinner(this.sessionId, winner);
-      await this.awardPrizes(winner);
+      
+      // Atomic Reward Awarding
+      const rewards = RewardService.getInstance();
+      await rewards.awardBulkPrizes(this.players, winner);
       
       // Auto-reset after 15 seconds
       this.startTimer(() => {
         this.resetToLobby();
+        this.scheduleDestruction();
       });
     } else {
       // Continue to next round
       this.startDiscussionPhase();
+    }
+  }
+
+  private destructionTimeout: NodeJS.Timeout | null = null;
+
+  private scheduleDestruction() {
+    this.cancelDestruction();
+    this.destructionTimeout = setTimeout(() => {
+      WhoIsSpyManager.destroySession(this.sessionId);
+    }, 60000); // 1 minute delay
+    logger.debug(`⌛ Session ${this.sessionId} scheduled for destruction in 60s.`);
+  }
+
+  private cancelDestruction() {
+    if (this.destructionTimeout) {
+      clearTimeout(this.destructionTimeout);
+      this.destructionTimeout = null;
+      logger.debug(`🛡️ Destruction cancelled for active session ${this.sessionId}.`);
     }
   }
 
@@ -395,20 +429,9 @@ export class WhoIsSpyManager {
     logger.info(`🔄 Session ${this.sessionId} reset to LOBBY automatically.`);
   }
 
-  private async awardPrizes(winner: 'Citizens' | 'Spy') {
-    const rewards = RewardService.getInstance();
-    for (const player of this.players) {
-      const isWinner = (winner === 'Citizens' && player.role === 'Citizen') || (winner === 'Spy' && player.role === 'Spy');
-      
-      // XP Logic: 10 base + 15 win
-      const xpAmount = isWinner ? 25 : 10;
-      await rewards.addXp(player.userId, xpAmount);
-
-      if (isWinner) {
-        const amount = player.role === 'Spy' ? 5 : 3;
-        await rewards.updateCoins(player.userId, amount);
-      }
-    }
+  private async awardPrizes(_winner: 'Citizens' | 'Spy') {
+    // Deprecated in favor of RewardService.awardBulkPrizes
+    logger.warn('awardPrizes called. Use awardBulkPrizes for transaction safety.');
   }
 
   private startTimer(onComplete: () => void) {

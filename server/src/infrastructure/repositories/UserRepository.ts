@@ -139,8 +139,9 @@ export class UserRepository implements IUserRepository {
     }));
   }
 
-  async addXp(id: string, amount: number): Promise<User> {
-    const user = await this.prisma.user.update({
+  async addXp(id: string, amount: number, tx?: any): Promise<User> {
+    const prisma = tx || this.prisma;
+    const user = await prisma.user.update({
       where: { id },
       data: {
         xp: { increment: amount },
@@ -149,8 +150,9 @@ export class UserRepository implements IUserRepository {
     return this.mapToDomain(user);
   }
 
-  async updateCoins(id: string, amount: number): Promise<User> {
-    const user = await this.prisma.user.update({
+  async updateCoins(id: string, amount: number, tx?: any): Promise<User> {
+    const prisma = tx || this.prisma;
+    const user = await prisma.user.update({
       where: { id },
       data: {
         coins: { increment: amount },
@@ -159,8 +161,9 @@ export class UserRepository implements IUserRepository {
     return this.mapToDomain(user);
   }
 
-  async updateDailyRewards(id: string, dailyRewards: any): Promise<User> {
-    const user = await this.prisma.user.update({
+  async updateDailyRewards(id: string, dailyRewards: any, tx?: any): Promise<User> {
+    const prisma = tx || this.prisma;
+    const user = await prisma.user.update({
       where: { id },
       data: {
         dailyRewards: dailyRewards,

@@ -1,50 +1,22 @@
-// src/presentation/http/controllers/SocialController.ts
 import { Request, Response, NextFunction } from 'express';
-import { DatabaseService } from '../../../infrastructure/database/DatabaseService';
+import { SocialService } from '../../../application/services/SocialService';
 import { AuthenticatedRequest } from '../middlewares/authenticate';
 
 export class SocialController {
-  private get prisma() {
-    return DatabaseService.getInstance().client;
-  }
+  private socialService: SocialService;
 
-  // ── Friends ──────────────────────────────────────────────────────────────
+  constructor() {
+    this.socialService = SocialService.getInstance();
+  }
 
   sendRequest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const senderId = (req as AuthenticatedRequest).userId;
       const { receiverId } = req.body;
-
-      if (senderId === receiverId) {
-        res.status(400).json({ success: false, message: 'You cannot send a friend request to yourself' });
-        return;
-      }
-
-      const existing = await this.prisma.friendship.findFirst({
-        where: {
-          OR: [
-            { requesterId: senderId, addresseeId: receiverId },
-            { requesterId: receiverId, addresseeId: senderId }
-          ]
-        }
-      });
-
-      if (existing) {
-        res.status(400).json({ success: false, message: 'Friendship or request already exists' });
-        return;
-      }
-
-      const request = await this.prisma.friendship.create({
-        data: {
-          requesterId: senderId,
-          addresseeId: receiverId,
-          status: 'PENDING'
-        }
-      });
-
+      const request = await this.socialService.sendFriendRequest(senderId, receiverId);
       res.status(201).json({ success: true, data: request });
-    } catch (e) {
-      next(e);
+    } catch (e: any) {
+      res.status(400).json({ success: false, message: e.message });
     }
   };
 
@@ -52,96 +24,71 @@ export class SocialController {
     try {
       const receiverId = (req as AuthenticatedRequest).userId;
       const { requestId, status } = req.body;
-
-      const request = await this.prisma.friendship.updateMany({
-        where: { id: requestId, addresseeId: receiverId },
-        data: { status }
-      });
-
-      if (request.count === 0) {
-        res.status(404).json({ success: false, message: 'Friend request not found' });
-        return;
-      }
-
+      await this.socialService.respondToRequest(receiverId, requestId, status);
       res.json({ success: true, message: 'Response recorded' });
-    } catch (e) {
-      next(e);
+    } catch (e: any) {
+      res.status(400).json({ success: false, message: e.message });
     }
   };
 
   listFriends = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = (req as AuthenticatedRequest).userId;
-
-      const friendships = await this.prisma.friendship.findMany({
-        where: {
-          OR: [
-            { requesterId: userId, status: 'ACCEPTED' },
-            { addresseeId: userId, status: 'ACCEPTED' }
-          ]
-        },
-        include: {
-          requester: {
-            select: { id: true, username: true, displayName: true, avatarUrl: true, status: true }
-          },
-          addressee: {
-            select: { id: true, username: true, displayName: true, avatarUrl: true, status: true }
-          }
-        }
-      });
-
-      const friends = friendships.map(f => {
-        return f.requesterId === userId ? f.addressee : f.requester;
-      });
-
+      const friends = await this.socialService.listFriends(userId);
       res.json({ success: true, data: friends });
     } catch (e) {
       next(e);
     }
   };
 
-  getPendingRequests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  listPendingRequests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = (req as AuthenticatedRequest).userId;
-
-      const requests = await this.prisma.friendship.findMany({
-        where: {
-          addresseeId: userId,
-          status: 'PENDING'
-        },
-        include: {
-          requester: {
-            select: { id: true, username: true, displayName: true, avatarUrl: true, status: true }
-          }
-        }
-      });
-
+      const requests = await this.socialService.listPendingRequests(userId);
       res.json({ success: true, data: requests });
     } catch (e) {
       next(e);
     }
   };
+
+  unfriend = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = (req as AuthenticatedRequest).userId;
+      const { friendId } = req.params;
+      await this.socialService.unfriend(userId, friendId);
+      res.json({ success: true, message: 'Unfriended successfully' });
+    } catch (e: any) {
+      res.status(400).json({ success: false, message: e.message });
+    }
+  };
+
   getNotificationStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = (req as AuthenticatedRequest).userId;
+      const stats = await this.socialService.getNotificationStats(userId);
+      res.json({ success: true, data: stats });
+    } catch (e) {
+      next(e);
+    }
+  };
 
-      const [pendingRequests, unreadNotifications] = await Promise.all([
-        this.prisma.friendship.count({
-          where: { addresseeId: userId, status: 'PENDING' }
-        }),
-        this.prisma.notification.count({
-          where: { userId, isRead: false }
-        })
-      ]);
+  blockUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const blockerId = (req as AuthenticatedRequest).userId;
+      const { userId: blockedId } = req.params;
+      const result = await this.socialService.blockUser(blockerId, blockedId);
+      res.json({ success: true, data: result });
+    } catch (e) {
+      next(e);
+    }
+  };
 
-      res.json({
-        success: true,
-        data: {
-          total: pendingRequests + unreadNotifications,
-          pendingRequests,
-          unreadNotifications
-        }
-      });
+  unblockUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const blockerId = (req as AuthenticatedRequest).userId;
+      const { userId: blockedId } = req.params;
+      await this.socialService.unblockUser(blockerId, blockedId);
+      res.json({ success: true, message: 'User unblocked' });
     } catch (e) {
       next(e);
     }
@@ -153,16 +100,7 @@ export class SocialController {
     try {
       const senderId = (req as AuthenticatedRequest).userId;
       const { receiverId, content, roomId } = req.body;
-
-      const message = await this.prisma.message.create({
-        data: {
-          senderId,
-          roomId, // Note: Direct messages might need a specific room or logic
-          content,
-          type: 'TEXT'
-        }
-      });
-
+      const message = await this.socialService.sendMessage(senderId, receiverId, content, roomId);
       res.status(201).json({ success: true, data: message });
     } catch (e) {
       next(e);
@@ -173,21 +111,7 @@ export class SocialController {
     try {
       const currentUserId = (req as AuthenticatedRequest).userId;
       const { userId: otherUserId } = req.params;
-
-      // This logic depends on how rooms are structured for DMs
-      // For now, let's fetch messages where both are involved if they share a room
-      const messages = await this.prisma.message.findMany({
-        where: {
-          OR: [
-            { senderId: currentUserId },
-            { senderId: otherUserId }
-          ]
-        },
-        include: { sender: true },
-        orderBy: { createdAt: 'asc' },
-        take: 50
-      });
-
+      const messages = await this.socialService.getChatHistory(currentUserId, otherUserId);
       res.json({ success: true, data: messages });
     } catch (e) {
       next(e);
@@ -198,28 +122,10 @@ export class SocialController {
     try {
       const currentUserId = (req as AuthenticatedRequest).userId;
       const { messageId } = req.params;
-
-      const message = await this.prisma.message.findUnique({
-        where: { id: messageId }
-      });
-
-      if (!message) {
-        res.status(404).json({ success: false, message: 'Message not found' });
-        return;
-      }
-
-      if (message.senderId !== currentUserId) {
-        res.status(403).json({ success: false, message: 'Unauthorized to delete this message' });
-        return;
-      }
-
-      await this.prisma.message.delete({
-        where: { id: messageId }
-      });
-      
+      await this.socialService.deleteMessage(currentUserId, messageId);
       res.json({ success: true, message: 'Message deleted successfully' });
-    } catch (e) {
-      next(e);
+    } catch (e: any) {
+      res.status(400).json({ success: false, message: e.message });
     }
   };
 }

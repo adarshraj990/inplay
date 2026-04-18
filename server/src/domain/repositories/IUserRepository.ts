@@ -25,8 +25,8 @@ export interface IUserRepository {
   update(id: string, data: UpdateUserDTO): Promise<User>;
   delete(id: string): Promise<void>;
   searchByUsername(query: string, limit?: number): Promise<UserPublicProfile[]>;
-  addXp(id: string, amount: number): Promise<User>;
-  updateCoins(id: string, amount: number): Promise<User>;
-  updateDailyRewards(id: string, dailyRewards: any): Promise<User>;
+  addXp(id: string, amount: number, tx?: any): Promise<User>;
+  updateCoins(id: string, amount: number, tx?: any): Promise<User>;
+  updateDailyRewards(id: string, dailyRewards: any, tx?: any): Promise<User>;
   findByIds(ids: string[]): Promise<User[]>;
 }

@@ -131,11 +131,11 @@ export class RewardService {
   /**
    * Adds XP to a user and handles leveling logic (100 XP per level).
    */
-  public async addXp(userId: string, amount: number): Promise<any> {
+  public async addXp(userId: string, amount: number, tx?: any): Promise<any> {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new Error('User not found');
 
-    const updatedUser = await this.userRepository.addXp(userId, amount);
+    const updatedUser = await this.userRepository.addXp(userId, amount, tx);
 
     if (updatedUser && updatedUser.level > user.level) {
       logger.info(`🆙 User ${userId} leveled up to Lvl ${updatedUser.level}!`);
@@ -167,5 +167,31 @@ export class RewardService {
     
     logger.info(`🎁 User ${userId} claimed +5 coins daily bonus.`);
     return { success: true, amount: 5, message: 'Daily bonus claimed!' };
+  }
+
+  /**
+   * Awards prizes to all players in a match atomically.
+   */
+  public async awardBulkPrizes(players: any[], winner: 'Citizens' | 'Spy'): Promise<void> {
+    const prisma = require('../../infrastructure/database/DatabaseService').DatabaseService.getInstance().client;
+
+    await prisma.$transaction(async (tx: any) => {
+      for (const player of players) {
+        const isWinner = (winner === 'Citizens' && player.role === 'Citizen') || (winner === 'Spy' && player.role === 'Spy');
+        
+        // XP Logic: 10 base + 15 win
+        const xpAmount = isWinner ? 25 : 10;
+        await this.addXp(player.userId, xpAmount, tx);
+
+        if (isWinner) {
+          const coinAmount = player.role === 'Spy' ? 5 : 3;
+          // Note: updateCoins internal uses ensureDailyReset which might need to be transaction-aware.
+          // For simplicity in this atomic block, we'll perform raw coin update if transaction exists.
+          await this.userRepository.updateCoins(player.userId, coinAmount, tx);
+        }
+      }
+    });
+
+    logger.info(`⚖️ Bulk prizes awarded for session via atomic transaction.`);
   }
 }

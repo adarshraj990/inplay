@@ -17,7 +17,7 @@ import crypto from 'crypto';
 import { authRouter } from './presentation/http/routes/auth.routes';
 import { userRouter } from './presentation/http/routes/user.routes';
 import { roomRouter } from './presentation/http/routes/room.routes';
-import { friendsRouter } from './presentation/http/routes/friends.routes';
+import { socialRouter } from './presentation/http/routes/social.routes';
 import { gameRouter } from './presentation/http/routes/game.routes';
 import { messagesRouter } from './presentation/http/routes/messages.routes';
 import rewardRouter from './presentation/http/routes/reward.routes';
@@ -111,7 +111,7 @@ export function createApp(): Application {
   app.use('/api/v1', apiV1);
 
   // New Social & Messaging Routes (Fresh Start)
-  app.use('/api/friends', friendsRouter);
+  app.use('/api/social', socialRouter);
   app.use('/api/messages', messagesRouter);
 
   // ── 404 Handler ──────────────────────────────────────
