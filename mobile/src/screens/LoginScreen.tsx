@@ -32,6 +32,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     try {
       await login(email, password);
     } catch (e: any) {
+      Alert.alert("Network Error", e.message);
       setError(e.message || 'Login failed. Please try again.');
     }
   };

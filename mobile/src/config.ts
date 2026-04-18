@@ -14,12 +14,12 @@ export const CONFIG = {
   API_BASE_URL,
   SOCKET_URL,
   ENDPOINTS: {
-    USER_PROFILE: `${BASE_URL}/api/users/me`,
-    PROFILE_UPDATE: `${BASE_URL}/api/users/me`,
-    DAILY_REWARD: `${BASE_URL}/api/users/me/daily-reward`,
-    REPORTS: `${BASE_URL}/api/reports`,
-    ROOMS: `${BASE_URL}/api/v1/rooms`,
-    STATS: `${BASE_URL}/api/v1/stats/overview`,
+    USER_PROFILE: `${API_BASE_URL}/users/me`,
+    PROFILE_UPDATE: `${API_BASE_URL}/users/me`,
+    DAILY_REWARD: `${API_BASE_URL}/users/me/daily-reward`,
+    REPORTS: `${API_BASE_URL}/reports`,
+    ROOMS: `${API_BASE_URL}/rooms`,
+    STATS: `${API_BASE_URL}/stats/overview`,
     SOCIAL: {
       FRIENDS: `${BASE_URL}/api/social/friends`,
       REQUESTS: `${BASE_URL}/api/social/friends/requests`,
@@ -27,8 +27,8 @@ export const CONFIG = {
       SEND_REQUEST: `${BASE_URL}/api/social/friends/request`,
       NOTIFICATIONS: `${BASE_URL}/api/social/notifications/stats`,
     },
-    LOGIN: `${BASE_URL}/api/auth/login`,
-    REGISTER: `${BASE_URL}/api/auth/register`,
-    TASKS: `${BASE_URL}/api/rewards/tasks`,
+    LOGIN: `${API_BASE_URL}/auth/login`,
+    REGISTER: `${API_BASE_URL}/auth/register`,
+    TASKS: `${API_BASE_URL}/rewards/tasks`,
   }
 };
