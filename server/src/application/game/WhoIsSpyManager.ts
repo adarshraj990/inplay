@@ -5,6 +5,8 @@ import { AgoraService } from '../services/AgoraService';
 import { WordService } from '../services/game/WordService';
 import { UserRepository } from '../../infrastructure/repositories/UserRepository';
 import { GameSessionRepository } from '../../infrastructure/repositories/GameSessionRepository';
+import { RoomService } from '../services/room/RoomService';
+import { MatchmakingService } from '../services/matchmaking/MatchmakingService';
 import { User } from '../../domain/entities/User';
 
 const logger = Logger.getInstance();
@@ -36,7 +38,7 @@ export class WhoIsSpyManager {
   private interval: NodeJS.Timeout | null = null;
   private votes: Record<string, string> = {}; // voterId -> targetId
   private gameSessionRepository: GameSessionRepository;
-  private isPublic: boolean = false;
+  public isPublic: boolean = false;
 
   constructor(sessionId: string, io: SocketServer) {
     this.sessionId = sessionId;
@@ -48,7 +50,6 @@ export class WhoIsSpyManager {
     if (!this.sessions.has(sessionId)) {
       this.sessions.set(sessionId, new WhoIsSpyManager(sessionId, io));
     }
-    // Cancel any pending destruction if the session is accessed again
     const session = this.sessions.get(sessionId)!;
     session.cancelDestruction();
     return session;
@@ -64,15 +65,11 @@ export class WhoIsSpyManager {
   }
 
   public static findOrCreateMatch(io: SocketServer): string {
-    // 1. Look for existing public lobby with space
-    for (const [id, manager] of this.sessions.entries()) {
-      if (manager.isPublic && manager.phase === 'LOBBY' && manager.players.length < WhoIsSpyManager.MAX_PLAYERS) {
-        logger.info(`🔍 [Matchmaking] Found existing lobby: ${id}`);
-        return id;
-      }
-    }
+    const matchmaking = MatchmakingService.getInstance();
+    const existingLobbyId = matchmaking.findPublicLobby(this.sessions, this.MAX_PLAYERS);
+    
+    if (existingLobbyId) return existingLobbyId;
 
-    // 2. Create new public lobby if none found
     const newId = `PUB_${Math.floor(1000 + Math.random() * 9000)}`;
     const manager = this.getOrCreate(newId, io);
     manager.isPublic = true;
@@ -80,31 +77,47 @@ export class WhoIsSpyManager {
     return newId;
   }
 
+  public getReservations(): number {
+    return RoomService.getInstance().getReservations(this.sessionId);
+  }
+
   public async joinLobby(userId: string): Promise<boolean> {
-    if (this.players.length >= WhoIsSpyManager.MAX_PLAYERS) return false;
+    // 1. Check if already in
     if (this.players.find(p => p.userId === userId)) return true;
 
-    const userRepository = new UserRepository();
-    const user = await userRepository.findById(userId);
-
-    this.players.push({
-      userId,
-      role: 'Citizen',
-      word: '',
-      isAlive: true,
-      level: user?.level || 1,
-      xp: user?.xp || 0,
-      isReady: true,
-      isOnline: true,
-    });
-
-    this.emitState();
-
-    if (this.players.length === WhoIsSpyManager.MAX_PLAYERS && this.phase === 'LOBBY') {
-      this.startLobbyCountdown();
+    // 2. Sync Reservation check (Anti-Race Condition)
+    const roomService = RoomService.getInstance();
+    if (!roomService.reserveSlot(this.sessionId, userId, this.players.length)) {
+      return false;
     }
 
-    return true;
+    try {
+      // 3. Async Data Fetch (Now protected by reservation)
+      const userRepository = new UserRepository();
+      const user = await userRepository.findById(userId);
+
+      this.players.push({
+        userId,
+        role: 'Citizen',
+        word: '',
+        isAlive: true,
+        level: user?.level || 1,
+        xp: user?.xp || 0,
+        isReady: true,
+        isOnline: true,
+      });
+
+      this.emitState();
+
+      if (this.players.length === WhoIsSpyManager.MAX_PLAYERS && this.phase === 'LOBBY') {
+        this.startLobbyCountdown();
+      }
+
+      return true;
+    } finally {
+      // Always clear reservation as it's now officially in this.players
+      roomService.clearReservation(this.sessionId, userId);
+    }
   }
 
   public leaveLobby(userId: string) {

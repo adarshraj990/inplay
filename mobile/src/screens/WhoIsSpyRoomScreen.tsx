@@ -301,18 +301,19 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           player={selectedPlayer}
           onReport={async (id) => {
             try {
-              const response = await fetch(CONFIG.ENDPOINTS.REPORTS, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reportedId: id, reason: 'Reported via room profile', context: 'SPY99' })
+              const response = await apiService.post(CONFIG.ENDPOINTS.REPORTS, {
+                reportedId: id,
+                reason: 'Reported via room profile',
+                context: 'SPY99'
               });
-              const data = await response.json();
-              if (data.success) {
+              
+              if (response.data.success) {
                 setProfileVisible(false);
                 Alert.alert('Reported', 'Thank you for your report. We will investigate.');
               }
             } catch (e) {
               console.log('Report failed', e);
+              Alert.alert('Error', 'Failed to submit report. Please try again.');
             }
           }}
           onBlock={(id) => {
