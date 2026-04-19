@@ -8,18 +8,13 @@ workflows:
       vars:
         CI: 1
         EXPO_NO_TELEMETRY: 1
-      node: 20.18.1
+      node: 20
     scripts:
       - name: Install dependencies
         script: |
-          # Clean environment and install dependencies
-          rm -rf node_modules
-          npm cache clean --force
           npm install --legacy-peer-deps
-      - name: Expo Prebuild & iOS Setup
+      - name: Expo Prebuild
         script: |
-          # Optional: Update pods if this workflow is ever targets iOS
-          # pod repo update
           npx expo prebuild --platform android
       - name: Build Android Release APK
         script: |
