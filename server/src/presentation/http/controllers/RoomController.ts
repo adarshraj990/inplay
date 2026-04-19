@@ -12,7 +12,7 @@ export class RoomController {
             select: {
               username: true,
               displayName: true,
-              avatarUrl: true
+              image: true
             }
           },
           _count: {
@@ -31,8 +31,8 @@ export class RoomController {
         id: room.id,
         roomName: room.name,
         game: "Who is Spy?", // Defaulting for now as per schema
-        host: room.owner.displayName || room.owner.username,
-        players: room._count.members,
+        host: (room as any).owner?.displayName || (room as any).owner?.username || 'Unknown',
+        players: (room as any)._count?.members || 0,
         maxPlayers: room.maxMembers,
         isLive: true
       }));

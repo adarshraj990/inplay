@@ -18,7 +18,7 @@ export const validateUpdateProfile = (req: Request, _res: Response, next: NextFu
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const message = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      const message = error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
       return next(new AppError(message, 400));
     }
     next(error);
