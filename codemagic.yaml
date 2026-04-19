@@ -21,7 +21,10 @@ workflows:
           fi
       - name: Build Android Release APK
         script: |
-          cd android && ./gradlew clean && ./gradlew assembleRelease
+          cd android
+          chmod +x gradlew
+          ./gradlew clean
+          ./gradlew assembleRelease
     artifacts:
       - android/app/build/outputs/apk/release/*.apk
     publishing:
