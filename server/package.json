@@ -11,7 +11,8 @@
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "lint": "eslint \"src/**/*.ts\" --fix",
-    "format": "prettier --write 'src/**/*.ts'"
+    "format": "prettier --write 'src/**/*.ts'",
+    "render-build": "npm install --legacy-peer-deps && npx prisma generate && npm run build"
   },
   "dependencies": {
     "@better-auth/infra": "^0.2.4",
@@ -70,7 +71,7 @@
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1",
-    "zod": "^3.22.4"
+    "zod": "^4.3.6"
   },
   "engines": {
     "node": "20.x"
