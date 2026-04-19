@@ -13,6 +13,12 @@ workflows:
       - name: Install dependencies
         script: |
           npm install --legacy-peer-deps
+      - name: Generate native folders if missing
+        script: |
+          if [ ! -d "android" ]; then
+            echo "Android directory not found. Running expo prebuild..."
+            npx expo prebuild --platform android --no-install
+          fi
       - name: Build Android Release APK
         script: |
           cd android && ./gradlew clean && ./gradlew assembleRelease
