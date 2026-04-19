@@ -51,41 +51,88 @@ enum GameStatus {
 // ── Models ────────────────────────────────────────────────────────────────────
 
 model User {
-  id             String     @id @default(uuid())
-  gameUid        String     @unique
-  username       String     @unique @db.VarChar(30)
-  email          String     @unique
-  passwordHash   String
-  displayName    String?    @db.VarChar(50)
-  avatarUrl      String?
-  bio            String?    @db.VarChar(300)
-  status         UserStatus @default(OFFLINE)
-  level          Int        @default(1)
-  xp             Int        @default(0)
-  coins          Int        @default(0)
-  dailyRewards   Json?
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+
+  // ── Indiplay Custom Fields ──────────────────────
+  gameUid           String     @unique
+  username          String     @unique @db.VarChar(30)
+  displayName       String?    @db.VarChar(50)
+  bio               String?    @db.VarChar(300)
+  status            UserStatus @default(OFFLINE)
+  level             Int        @default(1)
+  xp                Int        @default(0)
+  coins             Int        @default(0)
+  dailyRewards      Json?
   lastDailyRewardAt DateTime?
-  isVerified     Boolean    @default(false)
-  lastSeenAt     DateTime?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  lastSeenAt        DateTime?
 
   // ── Relations ───────────────────────────────────
-  sentFriendRequests     Friendship[]     @relation("FriendRequester")
-  receivedFriendRequests Friendship[]     @relation("FriendAddressee")
-  ownedRooms             Room[]           @relation("RoomOwner")
+  sentFriendRequests     Friendship[]      @relation("FriendRequester")
+  receivedFriendRequests Friendship[]      @relation("FriendAddressee")
+  ownedRooms             Room[]            @relation("RoomOwner")
   roomMemberships        RoomMember[]
   sentMessages           Message[]
   gameSessions           GameParticipant[]
   notifications          Notification[]
-  refreshTokens          RefreshToken[]
   achievements           UserAchievement[]
-  blockedUsers           BlockedUser[]    @relation("Blocker")
-  blockedByUsers         BlockedUser[]    @relation("Blocked")
+  blockedUsers           BlockedUser[]     @relation("Blocker")
+  blockedByUsers         BlockedUser[]     @relation("Blocked")
 
   @@index([username])
   @@index([email])
-  @@map("users")
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
 }
 
 model Friendship {
@@ -258,15 +305,3 @@ model Notification {
   @@map("notifications")
 }
 
-model RefreshToken {
-  id        String   @id @default(uuid())
-  userId    String
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("refresh_tokens")
-}

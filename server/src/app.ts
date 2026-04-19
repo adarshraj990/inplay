@@ -12,6 +12,8 @@ import { AppError } from './shared/errors/AppError';
 import { swaggerSpec } from './shared/config/swagger';
 import path from 'path';
 import crypto from 'crypto';
+import { auth } from './lib/auth';
+import { toNodeHandler } from 'better-auth/node';
 
 // ── Route imports ────────────────────────────────────────
 import { authRouter } from './presentation/http/routes/auth.routes';
@@ -114,6 +116,9 @@ export function createApp(): Application {
   // New Social & Messaging Routes (Fresh Start)
   app.use('/api/social', socialRouter);
   app.use('/api/messages', messagesRouter);
+
+  // ── Better-Auth Integration ──────────────────────────
+  app.all('/api/auth/*', toNodeHandler(auth));
 
   // ── 404 Handler ──────────────────────────────────────
   app.use((_req: Request, res: Response) => {

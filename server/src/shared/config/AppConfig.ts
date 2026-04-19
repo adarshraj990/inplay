@@ -18,6 +18,10 @@ export class AppConfig {
   public readonly rateLimitMax: number;
   public readonly agoraAppId: string;
   public readonly agoraAppCertificate: string;
+  public readonly betterAuthSecret: string;
+  public readonly betterAuthUrl: string;
+  public readonly resendApiKey: string;
+  public readonly betterAuthApiKey: string;
 
   private constructor() {
     this.nodeEnv = process.env.NODE_ENV ?? 'development';
@@ -35,6 +39,10 @@ export class AppConfig {
     this.rateLimitMax = parseInt(process.env.RATE_LIMIT_MAX ?? '100', 10);
     this.agoraAppId = process.env.AGORA_APP_ID ?? 'PLACEHOLDER_APP_ID';
     this.agoraAppCertificate = process.env.AGORA_APP_CERTIFICATE ?? 'PLACEHOLDER_CERTIFICATE';
+    this.betterAuthSecret = this.require('BETTER_AUTH_SECRET');
+    this.betterAuthUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:5000';
+    this.resendApiKey = this.require('RESEND_API_KEY');
+    this.betterAuthApiKey = process.env.BETTER_AUTH_API_KEY ?? '';
   }
 
   static getInstance(): AppConfig {

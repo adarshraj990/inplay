@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../navigation/AuthNavigator';
+import { AuthStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import ErrorBanner from '../components/common/ErrorBanner';
