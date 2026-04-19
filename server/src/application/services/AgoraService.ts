@@ -1,4 +1,5 @@
-import { RtcTokenBuilder, RtcRole } from 'agora-token';
+import pkg from 'agora-token';
+const { RtcTokenBuilder, RtcRole } = pkg;
 import { AppConfig } from "../../shared/config/AppConfig.js";
 import { Logger } from "../../shared/utils/Logger.js";
 
