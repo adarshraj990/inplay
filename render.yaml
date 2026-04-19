@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     rootDir: server
-    buildCommand: npm install && npx prisma generate && npx prisma db push --accept-data-loss && npm run build
+    buildCommand: npm run render-build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -12,6 +12,14 @@ services:
       - key: PORT
         value: 10000
       - key: DATABASE_URL
+        placeholder: "Paste your PostgreSQL connection string here"
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      - key: BETTER_AUTH_URL
+        value: https://indplay-backend-v3.onrender.com
+      - key: BETTER_AUTH_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
         sync: false
       - key: REDIS_URL
         sync: false
