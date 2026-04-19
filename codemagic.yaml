@@ -13,13 +13,14 @@ workflows:
       - name: Install dependencies
         script: |
           npm install --legacy-peer-deps
+          npx expo install --fix
       - name: Expo Prebuild
         script: |
-          npx expo prebuild --platform android
+          npx expo prebuild --clean --platform android
       - name: Build Android Release APK
         script: |
           npx expo export --platform android
-          cd android && ./gradlew assembleRelease
+          cd android && ./gradlew clean && ./gradlew assembleRelease
     artifacts:
       - android/app/build/outputs/apk/release/*.apk
     publishing:
