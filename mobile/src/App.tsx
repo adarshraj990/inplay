@@ -1,9 +1,8 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, ActivityIndicator } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { View, ActivityIndicator, StatusBar } from 'react-native';
 
 import BottomTabNavigator from './navigation/BottomTabNavigator';
 import AuthNavigator from './navigation/AuthNavigator';
@@ -20,7 +19,7 @@ import { Colors } from './constants/theme';
 const Stack = createNativeStackNavigator();
 
 function RootNavigator() {
-  const { token, isLoading } = useAuth();
+  const { session, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -32,7 +31,7 @@ function RootNavigator() {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {!token ? (
+      {!session ? (
         <Stack.Screen name="Auth" component={AuthNavigator} />
       ) : (
         <>
@@ -80,7 +79,7 @@ export default function App() {
               },
             }}
           >
-            <StatusBar style="light" backgroundColor={Colors.background} />
+            <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
             <EmoteProvider>
               <RootNavigator />
             </EmoteProvider>

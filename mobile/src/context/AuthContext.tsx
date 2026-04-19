@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAuthClient } from "better-auth/react";
-import { expoClient } from "better-auth/expo";
 import { CONFIG } from '../config';
 
 // Better-Auth Client Initialization
@@ -9,12 +8,17 @@ const authBaseURL = process.env.EXPO_PUBLIC_BASE_URL || CONFIG.API_BASE_URL.repl
 
 export const authClient = createAuthClient({
   baseURL: authBaseURL,
-  plugins: [
-    expoClient({
-      storage: SecureStore,
-      storagePrefix: "indplay",
-    }),
-  ],
+  storage: {
+    async getItem(key) {
+      return await AsyncStorage.getItem(key);
+    },
+    async setItem(key, value) {
+      await AsyncStorage.setItem(key, value);
+    },
+    async removeItem(key) {
+      await AsyncStorage.removeItem(key);
+    }
+  }
 });
 
 interface User {
@@ -85,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (username: string, email: string, password: string) => {
     setIsActionLoading(true);
     try {
-      const { data, error } = await authClient.signUp.email({
+      const { data, error } = await (authClient.signUp.email as any)({
         email,
         password,
         name: username, // Better-Auth uses 'name'
@@ -116,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const forgotPassword = async (email: string) => {
     setIsActionLoading(true);
     try {
-      const { error } = await authClient.forgetPassword({
+      const { error } = await (authClient as any).password.forgetPassword({
         email,
         redirectTo: "/reset-password",
       });

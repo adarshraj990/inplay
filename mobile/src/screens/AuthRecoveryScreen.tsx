@@ -11,8 +11,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../navigation/types';
 import { useAuth, authClient } from '../context/AuthContext';
@@ -25,7 +25,7 @@ const AuthRecoveryScreen = ({ navigation, route }: Props) => {
   const [email, setEmail] = useState(route.params?.email || '');
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { isLoading } = useAuth();
+  const { isLoading, forgotPassword } = useAuth();
   const [isResetting, setIsResetting] = useState(false);
 
   const handleReset = async () => {
@@ -37,15 +37,7 @@ const AuthRecoveryScreen = ({ navigation, route }: Props) => {
     setError(null);
     setIsResetting(true);
     try {
-      const { error: resetError } = await authClient.forgetPassword({
-        email,
-        redirectTo: "/reset-password",
-      });
-      
-      if (resetError) {
-        throw new Error(resetError.message || 'Failed to send reset email');
-      }
-      
+      await forgotPassword(email);
       setIsSuccess(true);
     } catch (e: any) {
       console.error('Forgot password error:', e);

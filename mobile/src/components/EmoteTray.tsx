@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { BlurView } from '@react-native-community/blur';
 import { Colors, Radius, Spacing, Typography } from '../constants/theme';
 import { useEmotes } from '../context/EmoteContext';
 
@@ -11,7 +11,7 @@ const EmoteTray: React.FC<{ sessionId: string, gameType: string }> = ({ sessionI
 
   return (
     <View style={styles.container}>
-      <BlurView intensity={20} tint="dark" style={styles.blur}>
+      <BlurView blurType="dark" blurAmount={10} style={styles.blur}>
         {EMOTES.map(emoji => (
           <TouchableOpacity 
             key={emoji}

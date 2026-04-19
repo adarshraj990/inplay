@@ -3,8 +3,8 @@ import {
   View, Text, StyleSheet, TouchableOpacity,
   Animated, Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors, Typography, Spacing, Radius, Shadows } from '../constants/theme';
 
 const { width } = Dimensions.get('window');

@@ -11,8 +11,8 @@ import Animated, {
   withTiming, 
   interpolate 
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { WORD_BANK, WordPair } from '../constants/gameData';
@@ -26,7 +26,7 @@ import { useWhoIsSpyGame } from '../hooks/useWhoIsSpyGame';
 import { useAgoraVoice } from '../hooks/useAgoraVoice';
 import { CONFIG } from '../config';
 import apiService from '../services/apiService';
-import * as Haptics from 'expo-haptics';
+import ReactNativeHapticFeedback from "react-native-haptic-feedback";
 import { LayoutAnimation, Platform, UIManager } from 'react-native';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -106,7 +106,7 @@ const WhoIsSpyRoomScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   }, [triggerStart, livePlayers]);
 
   const handleVote = (targetId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    ReactNativeHapticFeedback.trigger("impactLight");
     triggerVote(targetId);
   };
 
