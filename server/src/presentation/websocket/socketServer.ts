@@ -1,14 +1,14 @@
 // src/presentation/websocket/socketServer.ts — Socket.io configuration
 import { Server as HttpServer } from 'http';
 import { Server as SocketServer, Socket } from 'socket.io';
-import { AppConfig } from '../../shared/config/AppConfig';
-import { Logger } from '../../shared/utils/Logger';
-import { RedisService } from '../../infrastructure/cache/RedisService';
-import { verifySocketJWT } from './middlewares/socketAuth';
-import { chatNamespace } from './namespaces/chat.namespace';
-import { gameNamespace } from './namespaces/game.namespace';
-import { voiceNamespace } from './namespaces/voice.namespace';
-import { socialNamespace } from './namespaces/social.namespace';
+import { AppConfig } from "../../shared/config/AppConfig.js";
+import { Logger } from "../../shared/utils/Logger.js";
+import { RedisService } from "../../infrastructure/cache/RedisService.js";
+import { verifySocketJWT } from "./middlewares/socketAuth.js";
+import { chatNamespace } from "./namespaces/chat.namespace.js";
+import { gameNamespace } from "./namespaces/game.namespace.js";
+import { voiceNamespace } from "./namespaces/voice.namespace.js";
+import { socialNamespace } from "./namespaces/social.namespace.js";
 
 const logger = Logger.getInstance();
 

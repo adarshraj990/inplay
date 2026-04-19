@@ -1,5 +1,5 @@
-import { DatabaseService } from '../../infrastructure/database/DatabaseService';
-import { Logger } from '../../shared/utils/Logger';
+import { DatabaseService } from "../../infrastructure/database/DatabaseService.js";
+import { Logger } from "../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
 
@@ -69,16 +69,16 @@ export class SocialService {
       },
       include: {
         requester: {
-          select: { id: true, username: true, displayName: true, avatarUrl: true, status: true }
+          select: { id: true, username: true, displayName: true, image: true, status: true }
         },
         addressee: {
-          select: { id: true, username: true, displayName: true, avatarUrl: true, status: true }
+          select: { id: true, username: true, displayName: true, image: true, status: true }
         }
       }
     });
 
     return friendships.map(f => {
-      return f.requesterId === userId ? f.addressee : f.requester;
+      return f.requesterId === userId ? (f as any).addressee : (f as any).requester;
     });
   }
 
@@ -87,7 +87,7 @@ export class SocialService {
       where: { addresseeId: userId, status: 'PENDING' },
       include: {
         requester: {
-          select: { id: true, username: true, displayName: true, avatarUrl: true }
+          select: { id: true, username: true, displayName: true, image: true }
         }
       }
     });
@@ -162,7 +162,7 @@ export class SocialService {
       },
       include: {
         sender: {
-          select: { id: true, username: true, displayName: true, avatarUrl: true }
+          select: { id: true, username: true, displayName: true, image: true }
         }
       },
       orderBy: { createdAt: 'asc' },

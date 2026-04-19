@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { RewardService } from '../../../application/services/RewardService';
-import { Logger } from '../../../shared/utils/Logger';
+import { RewardService } from "../../../application/services/RewardService.js";
+import { Logger } from "../../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
 const rewardService = RewardService.getInstance();

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { RewardController } from '../controllers/RewardController';
-import { authenticate } from '../middlewares/authenticate';
+import { RewardController } from "../controllers/RewardController.js";
+import { authenticate } from "../middlewares/authenticate.js";
 
 const router = Router();
 const rewardController = new RewardController();

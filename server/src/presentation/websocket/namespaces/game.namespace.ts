@@ -1,6 +1,6 @@
 import { Server as SocketServer, Socket } from 'socket.io';
-import { Logger } from '../../../shared/utils/Logger';
-import { WhoIsSpyManager } from '../../../application/game/WhoIsSpyManager';
+import { Logger } from "../../../shared/utils/Logger.js";
+import { WhoIsSpyManager } from "../../../application/game/WhoIsSpyManager.js";
 
 const logger = Logger.getInstance();
 

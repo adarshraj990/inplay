@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { ReportModel } from '../../../infrastructure/database/schemas/ReportSchema';
-import { AuthenticatedRequest } from '../middlewares/authenticate';
-import { Logger } from '../../../shared/utils/Logger';
+import { ReportModel } from "../../../infrastructure/database/schemas/ReportSchema.js";
+import { AuthenticatedRequest } from "../middlewares/authenticate.js";
+import { Logger } from "../../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
 

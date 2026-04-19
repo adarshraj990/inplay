@@ -1,7 +1,7 @@
 // src/presentation/http/routes/game.routes.ts
 import { Router } from 'express';
-import { GameController } from '../controllers/GameController';
-import { authenticate } from '../middlewares/authenticate';
+import { GameController } from "../controllers/GameController.js";
+import { authenticate } from "../middlewares/authenticate.js";
 
 const controller = new GameController();
 export const gameRouter = Router();

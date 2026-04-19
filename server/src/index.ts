@@ -2,12 +2,12 @@ import 'dotenv/config';
 
 // src/index.ts — Indplay Server Entry Point
 import 'reflect-metadata';
-import { createApp } from './app';
-import { createSocketServer } from './presentation/websocket/socketServer';
-import { DatabaseService } from './infrastructure/database/DatabaseService';
-import { RedisService } from './infrastructure/cache/RedisService';
-import { Logger } from './shared/utils/Logger';
-import { AppConfig } from './shared/config/AppConfig';
+import { createApp } from "./app.js";
+import { createSocketServer } from "./presentation/websocket/socketServer.js";
+import { DatabaseService } from "./infrastructure/database/DatabaseService.js";
+import { RedisService } from "./infrastructure/cache/RedisService.js";
+import { Logger } from "./shared/utils/Logger.js";
+import { AppConfig } from "./shared/config/AppConfig.js";
 import http from 'http';
 
 const logger = Logger.getInstance();

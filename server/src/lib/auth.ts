@@ -2,8 +2,8 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { Resend } from "resend";
 import { dash } from "@better-auth/infra";
-import { DatabaseService } from "../infrastructure/database/DatabaseService";
-import { AppConfig } from "../shared/config/AppConfig";
+import { DatabaseService } from "../infrastructure/database/DatabaseService.js";
+import { AppConfig } from "../shared/config/AppConfig.js";
 import { PrismaClient } from "@prisma/client";
 
 const config = AppConfig.getInstance();

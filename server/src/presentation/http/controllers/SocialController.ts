@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { SocialService } from '../../../application/services/SocialService';
-import { AuthenticatedRequest } from '../middlewares/authenticate';
+import { SocialService } from "../../../application/services/SocialService.js";
+import { AuthenticatedRequest } from "../middlewares/authenticate.js";
 
 export class SocialController {
   private socialService: SocialService;

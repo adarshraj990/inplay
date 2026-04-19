@@ -1,7 +1,7 @@
 // src/presentation/websocket/namespaces/voice.namespace.ts
 // WebRTC signaling namespace — handles SDP offer/answer and ICE candidates
 import { Server as SocketServer, Socket } from 'socket.io';
-import { Logger } from '../../../shared/utils/Logger';
+import { Logger } from "../../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
 

@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
-import { DatabaseService } from '../database/DatabaseService';
-import { IUserRepository, CreateUserDTO, UpdateUserDTO } from '../../domain/repositories/IUserRepository';
-import { User, UserPublicProfile, UserStatus } from '../../domain/entities/User';
+import { DatabaseService } from "../database/DatabaseService.js";
+import { IUserRepository, CreateUserDTO, UpdateUserDTO } from "../../domain/repositories/IUserRepository.js";
+import { User, UserPublicProfile, UserStatus } from "../../domain/entities/User.js";
 
 export class UserRepository implements IUserRepository {
   private get prisma() {
@@ -49,11 +49,16 @@ export class UserRepository implements IUserRepository {
     try {
       const user = await this.prisma.user.create({
         data: {
+          id: data.gameUid, // Assuming ID is same as gameUid or handled by Prisma, better-auth needs an ID
           username: data.username,
           email: data.email,
-          passwordHash: data.passwordHash,
+          emailVerified: false,
+          name: data.displayName,
+          image: null,
           displayName: data.displayName,
           gameUid: data.gameUid,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       });
       return this.mapToDomain(user);
@@ -74,7 +79,7 @@ export class UserRepository implements IUserRepository {
       where: { id },
       data: {
         displayName: data.displayName,
-        avatarUrl: data.avatarUrl,
+        image: data.image,
         bio: data.bio,
         status: data.status as any,
       },
@@ -102,7 +107,7 @@ export class UserRepository implements IUserRepository {
         gameUid: true,
         username: true,
         displayName: true,
-        avatarUrl: true,
+        image: true,
         bio: true,
         status: true,
         level: true,
@@ -126,7 +131,7 @@ export class UserRepository implements IUserRepository {
         gameUid: true,
         username: true,
         displayName: true,
-        avatarUrl: true,
+        image: true,
         bio: true,
         status: true,
         level: true,

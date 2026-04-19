@@ -1,6 +1,6 @@
 // src/presentation/websocket/namespaces/social.namespace.ts
 import { Server as SocketServer, Socket } from 'socket.io';
-import { Logger } from '../../../shared/utils/Logger';
+import { Logger } from "../../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
 

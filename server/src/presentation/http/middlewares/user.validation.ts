@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { AppError } from '../../../shared/errors/AppError';
+import { AppError } from "../../../shared/errors/AppError.js";
 
 const updateProfileSchema = z.object({
   displayName: z.string().min(2).max(50).optional(),

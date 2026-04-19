@@ -1,8 +1,8 @@
 // src/presentation/http/controllers/SyncStatusController.ts
 import { Request, Response } from 'express';
-import { DatabaseService } from '../../../infrastructure/database/DatabaseService';
-import { RedisService } from '../../../infrastructure/cache/RedisService';
-import { Logger } from '../../../shared/utils/Logger';
+import { DatabaseService } from "../../../infrastructure/database/DatabaseService.js";
+import { RedisService } from "../../../infrastructure/cache/RedisService.js";
+import { Logger } from "../../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
 

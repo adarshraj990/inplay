@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { User, UserStatus } from '../../../domain/entities/User';
+import { User, UserStatus } from "../../../domain/entities/User.js";
 
 export const userSchema = new Schema(
   {

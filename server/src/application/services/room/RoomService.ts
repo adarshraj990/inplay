@@ -1,4 +1,4 @@
-import { Logger } from '../../../shared/utils/Logger';
+import { Logger } from "../../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
 

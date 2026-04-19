@@ -1,6 +1,6 @@
 // src/presentation/http/routes/auth.routes.ts
 import { Router } from 'express';
-import { AuthController } from '../controllers/AuthController';
+import { AuthController } from "../controllers/AuthController.js";
 
 const controller = new AuthController();
 export const authRouter = Router();

@@ -1,7 +1,7 @@
 // src/presentation/websocket/middlewares/socketAuth.ts
 import { Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import { AppConfig } from '../../../shared/config/AppConfig';
+import { AppConfig } from "../../../shared/config/AppConfig.js";
 
 export const verifySocketJWT = (
   socket: Socket,

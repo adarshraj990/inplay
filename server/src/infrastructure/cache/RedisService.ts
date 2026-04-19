@@ -1,7 +1,7 @@
 // src/infrastructure/cache/RedisService.ts — Redis singleton with pub/sub (gracefully optional)
 import { createClient, RedisClientType } from 'redis';
-import { AppConfig } from '../../shared/config/AppConfig';
-import { Logger } from '../../shared/utils/Logger';
+import { AppConfig } from "../../shared/config/AppConfig.js";
+import { Logger } from "../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
 const config = AppConfig.getInstance();

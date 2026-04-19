@@ -1,17 +1,16 @@
 // src/domain/repositories/IUserRepository.ts — Repository interface (dependency inversion)
-import { User, UserPublicProfile } from '../entities/User';
+import { User, UserPublicProfile } from "../entities/User.js";
 
 export interface CreateUserDTO {
   username: string;
   email: string;
-  passwordHash: string;
   displayName: string;
   gameUid: string;
 }
 
 export interface UpdateUserDTO {
   displayName?: string;
-  avatarUrl?: string;
+  image?: string;
   bio?: string;
   status?: string;
 }

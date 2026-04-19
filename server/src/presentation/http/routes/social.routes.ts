@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { SocialController } from '../controllers/SocialController';
-import { authenticate } from '../middlewares/authenticate';
+import { SocialController } from "../controllers/SocialController.js";
+import { authenticate } from "../middlewares/authenticate.js";
 
 const controller = new SocialController();
 export const socialRouter = Router();

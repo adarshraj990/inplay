@@ -1,5 +1,5 @@
 import { PrismaClient, GameStatus } from '@prisma/client';
-import { DatabaseService } from '../database/DatabaseService';
+import { DatabaseService } from "../database/DatabaseService.js";
 
 export class GameSessionRepository {
   private prisma: PrismaClient;

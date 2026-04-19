@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { UserRepository } from '../../../infrastructure/repositories/UserRepository';
-import { AuthenticatedRequest } from '../middlewares/authenticate';
-import { AppConfig } from '../../../shared/config/AppConfig';
-import { RewardService } from '../../../application/services/RewardService';
+import { UserRepository } from "../../../infrastructure/repositories/UserRepository.js";
+import { AuthenticatedRequest } from "../middlewares/authenticate.js";
+import { AppConfig } from "../../../shared/config/AppConfig.js";
+import { RewardService } from "../../../application/services/RewardService.js";
 
 export class UserController {
   private userRepository: UserRepository;
@@ -48,7 +48,7 @@ export class UserController {
       const serverUrl = config.nodeEnv === 'development' ? `http://localhost:${config.port}` : '';
       const avatarUrl = `${serverUrl}/uploads/avatars/${req.file.filename}`;
       
-      const updatedUser = await this.userRepository.update(userId, { avatarUrl });
+      const updatedUser = await this.userRepository.update(userId, { image: avatarUrl });
       res.json({ success: true, data: updatedUser, message: 'Avatar updated successfully' });
     } catch (e) {
       next(e);

@@ -1,8 +1,8 @@
 // src/presentation/http/middlewares/authenticate.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { AppConfig } from '../../../shared/config/AppConfig';
-import { UnauthorizedError } from '../../../shared/errors/AppError';
+import { AppConfig } from "../../../shared/config/AppConfig.js";
+import { UnauthorizedError } from "../../../shared/errors/AppError.js";
 
 export interface AuthenticatedRequest extends Request {
   userId: string;

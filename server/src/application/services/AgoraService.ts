@@ -1,6 +1,6 @@
 import { RtcTokenBuilder, RtcRole } from 'agora-token';
-import { AppConfig } from '../../shared/config/AppConfig';
-import { Logger } from '../../shared/utils/Logger';
+import { AppConfig } from "../../shared/config/AppConfig.js";
+import { Logger } from "../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
 const config = AppConfig.getInstance();

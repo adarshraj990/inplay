@@ -1,6 +1,6 @@
 // src/presentation/http/controllers/StatsController.ts
 import { Request, Response, NextFunction } from 'express';
-import { DatabaseService } from '../../../infrastructure/database/DatabaseService';
+import { DatabaseService } from "../../../infrastructure/database/DatabaseService.js";
 
 export class StatsController {
   getOverview = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {

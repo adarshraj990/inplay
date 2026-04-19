@@ -1,13 +1,13 @@
 import { Server as SocketServer } from 'socket.io';
-import { Logger } from '../../shared/utils/Logger';
-import { RewardService } from '../services/RewardService';
-import { AgoraService } from '../services/AgoraService';
-import { WordService } from '../services/game/WordService';
-import { UserRepository } from '../../infrastructure/repositories/UserRepository';
-import { GameSessionRepository } from '../../infrastructure/repositories/GameSessionRepository';
-import { RoomService } from '../services/room/RoomService';
-import { MatchmakingService } from '../services/matchmaking/MatchmakingService';
-import { User } from '../../domain/entities/User';
+import { Logger } from "../../shared/utils/Logger.js";
+import { RewardService } from "../services/RewardService.js";
+import { AgoraService } from "../services/AgoraService.js";
+import { WordService } from "../services/game/WordService.js";
+import { UserRepository } from "../../infrastructure/repositories/UserRepository.js";
+import { GameSessionRepository } from "../../infrastructure/repositories/GameSessionRepository.js";
+import { RoomService } from "../services/room/RoomService.js";
+import { MatchmakingService } from "../services/matchmaking/MatchmakingService.js";
+import { User } from "../../domain/entities/User.js";
 
 const logger = Logger.getInstance();
 

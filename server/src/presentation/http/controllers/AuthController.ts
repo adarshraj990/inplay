@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../../../application/services/AuthService';
-import { AppError } from '../../../shared/errors/AppError';
+import { AuthService } from "../../../application/services/AuthService.js";
+import { AppError } from "../../../shared/errors/AppError.js";
 
 export class AuthController {
   private authService: AuthService;

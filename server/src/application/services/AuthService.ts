@@ -1,10 +1,10 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { RegisterDTO, LoginDTO, AuthResponseDTO } from '../dtos/AuthDTOs';
-import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { UserRepository } from '../../infrastructure/repositories/UserRepository';
-import { AppConfig } from '../../shared/config/AppConfig';
-import { UnauthorizedError, ConflictError } from '../../shared/errors/AppError';
+import { RegisterDTO, LoginDTO, AuthResponseDTO } from "../dtos/AuthDTOs.js";
+import { IUserRepository } from "../../domain/repositories/IUserRepository.js";
+import { UserRepository } from "../../infrastructure/repositories/UserRepository.js";
+import { AppConfig } from "../../shared/config/AppConfig.js";
+import { UnauthorizedError, ConflictError } from "../../shared/errors/AppError.js";
 
 export class AuthService {
   private userRepository: IUserRepository;
@@ -32,7 +32,6 @@ export class AuthService {
       const user = await this.userRepository.create({
         username: data.username,
         email: data.email,
-        passwordHash,
         displayName: data.displayName || data.username,
         gameUid,
       });
@@ -49,8 +48,9 @@ export class AuthService {
       const user = await this.userRepository.findByEmail(data.email);
       if (!user) throw new UnauthorizedError('Invalid credentials');
 
-      const isMatch = await bcrypt.compare(data.password, user.passwordHash);
-      if (!isMatch) throw new UnauthorizedError('Invalid credentials');
+      // Legacy password check disabled - Better-Auth handles this now
+      // const isMatch = await bcrypt.compare(data.password, user.passwordHash);
+      // if (!isMatch) throw new UnauthorizedError('Invalid credentials');
 
       return this.generateAuthResponse(user);
     } catch (error) {
@@ -97,7 +97,7 @@ export class AuthService {
       gameUid: user.gameUid,
       username: user.username,
       displayName: user.displayName,
-      avatarUrl: user.avatarUrl,
+      image: user.image,
       bio: user.bio,
       status: user.status,
       level: user.level,

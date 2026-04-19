@@ -1,6 +1,6 @@
 // src/presentation/http/controllers/RoomController.ts
 import { Request, Response, NextFunction } from 'express';
-import { DatabaseService } from '../../../infrastructure/database/DatabaseService';
+import { DatabaseService } from "../../../infrastructure/database/DatabaseService.js";
 
 export class RoomController {
   listRooms = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -31,8 +31,8 @@ export class RoomController {
         id: room.id,
         roomName: room.name,
         game: "Who is Spy?", // Defaulting for now as per schema
-        host: (room as any).owner?.displayName || (room as any).owner?.username || 'Unknown',
-        players: (room as any)._count?.members || 0,
+        host: room.ownerId,
+        players: room._count?.members || 0,
         maxPlayers: room.maxMembers,
         isLive: true
       }));

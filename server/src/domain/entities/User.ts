@@ -4,9 +4,8 @@ export interface User {
   gameUid: string;
   username: string;
   email: string;
-  passwordHash: string;
   displayName: string;
-  avatarUrl: string | null;
+  image: string | null;
   bio: string | null;
   status: UserStatus;
   level: number;
@@ -40,7 +39,7 @@ export interface UserPublicProfile {
   gameUid: string;
   username: string;
   displayName: string;
-  avatarUrl: string | null;
+  image: string | null;
   bio: string | null;
   status: UserStatus;
   level: number;

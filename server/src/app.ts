@@ -6,26 +6,26 @@ import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
-import { AppConfig } from './shared/config/AppConfig';
-import { Logger } from './shared/utils/Logger';
-import { AppError } from './shared/errors/AppError';
-import { swaggerSpec } from './shared/config/swagger';
+import { AppConfig } from "./shared/config/AppConfig.js";
+import { Logger } from "./shared/utils/Logger.js";
+import { AppError } from "./shared/errors/AppError.js";
+import { swaggerSpec } from "./shared/config/swagger.js";
 import path from 'path';
 import crypto from 'crypto';
-import { auth } from './lib/auth';
+import { auth } from "./lib/auth.js";
 import { toNodeHandler } from 'better-auth/node';
 
 // ── Route imports ────────────────────────────────────────
-import { authRouter } from './presentation/http/routes/auth.routes';
-import { userRouter } from './presentation/http/routes/user.routes';
-import { roomRouter } from './presentation/http/routes/room.routes';
-import { socialRouter } from './presentation/http/routes/social.routes';
-import { gameRouter } from './presentation/http/routes/game.routes';
-import { messagesRouter } from './presentation/http/routes/messages.routes';
-import rewardRouter from './presentation/http/routes/reward.routes';
-import { reportRouter } from './presentation/http/routes/report.routes';
-import { StatsController } from './presentation/http/controllers/StatsController';
-import { SyncStatusController } from './presentation/http/controllers/SyncStatusController';
+import { authRouter } from "./presentation/http/routes/auth.routes.js";
+import { userRouter } from "./presentation/http/routes/user.routes.js";
+import { roomRouter } from "./presentation/http/routes/room.routes.js";
+import { socialRouter } from "./presentation/http/routes/social.routes.js";
+import { gameRouter } from "./presentation/http/routes/game.routes.js";
+import { messagesRouter } from "./presentation/http/routes/messages.routes.js";
+import rewardRouter from "./presentation/http/routes/reward.routes.js";
+import { reportRouter } from "./presentation/http/routes/report.routes.js";
+import { StatsController } from "./presentation/http/controllers/StatsController.js";
+import { SyncStatusController } from "./presentation/http/controllers/SyncStatusController.js";
 
 const logger = Logger.getInstance();
 

@@ -1,9 +1,9 @@
 // src/presentation/http/routes/user.routes.ts
 import { Router } from 'express';
-import { UserController } from '../controllers/UserController';
-import { authenticate } from '../middlewares/authenticate';
-import { validateUpdateProfile } from '../middlewares/user.validation';
-import { avatarUpload } from '../../../shared/utils/fileUpload';
+import { UserController } from "../controllers/UserController.js";
+import { authenticate } from "../middlewares/authenticate.js";
+import { validateUpdateProfile } from "../middlewares/user.validation.js";
+import { avatarUpload } from "../../../shared/utils/fileUpload.js";
 
 const controller = new UserController();
 export const userRouter = Router();

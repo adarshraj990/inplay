@@ -1,7 +1,7 @@
 // src/presentation/http/routes/room.routes.ts
 import { Router } from 'express';
-import { RoomController } from '../controllers/RoomController';
-import { authenticate } from '../middlewares/authenticate';
+import { RoomController } from "../controllers/RoomController.js";
+import { authenticate } from "../middlewares/authenticate.js";
 
 const controller = new RoomController();
 export const roomRouter = Router();

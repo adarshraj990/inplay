@@ -2,6 +2,7 @@
   "name": "@indplay/server",
   "version": "1.0.0",
   "description": "Indplay Backend Server - Node.js + TypeScript + Socket.io",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",

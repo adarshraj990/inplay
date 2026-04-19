@@ -1,6 +1,6 @@
-import { Logger } from '../../shared/utils/Logger';
-import { UserRepository } from '../../infrastructure/repositories/UserRepository';
-import { IUserRepository } from '../../domain/repositories/IUserRepository';
+import { Logger } from "../../shared/utils/Logger.js";
+import { UserRepository } from "../../infrastructure/repositories/UserRepository.js";
+import { IUserRepository } from "../../domain/repositories/IUserRepository.js";
 
 const logger = Logger.getInstance();
 
