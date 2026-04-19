@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Dimensions, Animated as RNAnimated, Easing, Platform
+  Dimensions, Animated as RNAnimated, Easing, Platform, StatusBar
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors, Typography, Spacing, Radius, Shadows } from '../../constants/theme';
 import Animated, { 
   useSharedValue, 
@@ -46,7 +45,7 @@ const SpyLobby: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar barStyle="light-content" />
       <LinearGradient
         colors={[Colors.background, Colors.deepBlue]}
         style={StyleSheet.absoluteFill}

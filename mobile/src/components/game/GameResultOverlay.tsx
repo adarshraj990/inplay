@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity, Dimensions } from 'react-native';
 import { Colors, Typography, Spacing, Radius } from '../../constants/theme';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 
 const { width } = Dimensions.get('window');
 

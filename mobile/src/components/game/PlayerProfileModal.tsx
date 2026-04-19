@@ -4,8 +4,8 @@ import {
   TouchableOpacity, Image, 
   TouchableWithoutFeedback 
 } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from '@react-native-community/blur';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors, Typography, Spacing, Radius } from '../../constants/theme';
 
 interface PlayerProfileModalProps {
@@ -46,7 +46,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
         <View style={styles.outside}>
           <TouchableWithoutFeedback>
             <View style={styles.modal}>
-              <BlurView intensity={40} style={StyleSheet.absoluteFill} tint="dark" />
+              <BlurView blurAmount={40} style={StyleSheet.absoluteFill} blurType="dark" />
               
               <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
                 <Ionicons name="close" size={24} color={Colors.textSecondary} />

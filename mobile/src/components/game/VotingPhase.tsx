@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Colors, Typography, Spacing, Radius } from '../../constants/theme';
 import PlayerAvatarWithEmote from '../PlayerAvatarWithEmote';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface Player {
   id: string;

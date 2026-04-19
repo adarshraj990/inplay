@@ -3,8 +3,8 @@ import {
   View, Text, StyleSheet, Animated,
   Pressable, Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors, Typography, Spacing, Radius } from '../../constants/theme';
 
 interface RevealCardProps {
@@ -13,7 +13,7 @@ interface RevealCardProps {
   gameStarted: boolean;
 }
 
-import * as Haptics from 'expo-haptics';
+import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.85;
@@ -37,7 +37,10 @@ const RevealCard: React.FC<RevealCardProps> = ({ word, role, gameStarted }) => {
 
   const handlePressIn = () => {
     if (!gameStarted) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    ReactNativeHapticFeedback.trigger("impactHeavy", {
+      enableVibrateFallback: true,
+      ignoreAndroidSystemSettings: false,
+    });
     setIsRevealed(true);
     startScan();
     Animated.parallel([

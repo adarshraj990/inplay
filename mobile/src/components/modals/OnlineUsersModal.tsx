@@ -3,8 +3,8 @@ import {
   View, Text, StyleSheet, Modal, FlatList,
   TouchableOpacity, ActivityIndicator, Pressable
 } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from '@react-native-community/blur';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors, Typography, Spacing, Radius } from '../../constants/theme';
 import apiService from '../../services/apiService';
 
@@ -99,7 +99,7 @@ const OnlineUsersModal: React.FC<OnlineUsersModalProps> = ({ visible, onClose })
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
-        <BlurView intensity={20} style={StyleSheet.absoluteFill} />
+        <BlurView blurAmount={20} style={StyleSheet.absoluteFill} />
         <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
           <View style={styles.header}>
             <View>
