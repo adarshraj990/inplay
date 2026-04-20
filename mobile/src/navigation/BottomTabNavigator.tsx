@@ -14,7 +14,7 @@ const Tab = createBottomTabNavigator();
 
 type TabRoute = 'Home' | 'Games' | 'Tasks' | 'Chats' | 'Profile';
 
-const TAB_ICONS: Record<TabRoute, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
+const TAB_ICONS: Record<TabRoute, { active: string; inactive: string }> = {
   Home:    { active: 'home',              inactive: 'home-outline'         },
   Games:   { active: 'game-controller',   inactive: 'game-controller-outline' },
   Tasks:   { active: 'list',             inactive: 'list-outline'         },

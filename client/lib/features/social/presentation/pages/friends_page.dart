@@ -94,9 +94,9 @@ class _FriendsPageState extends State<FriendsPage> with SingleTickerProviderStat
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -133,7 +133,7 @@ class _FriendsPageState extends State<FriendsPage> with SingleTickerProviderStat
             ),
             subtitle: Text(
               isOnline ? 'Online' : 'Offline',
-              style: TextStyle(color: isOnline ? Colors.greenAccent.withOpacity(0.7) : Colors.white24, fontSize: 12),
+              style: TextStyle(color: isOnline ? Colors.greenAccent.withValues(alpha: 0.7) : Colors.white24, fontSize: 12),
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -213,7 +213,7 @@ class _FriendsPageState extends State<FriendsPage> with SingleTickerProviderStat
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: Colors.white70, size: 20),

@@ -153,7 +153,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(
@@ -218,7 +218,7 @@ class _MessageBubble extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isMe ? const Color(0xFF6C5CE7) : Colors.white.withOpacity(0.08),
+                    color: isMe ? const Color(0xFF6C5CE7) : Colors.white.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),
