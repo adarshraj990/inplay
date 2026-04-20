@@ -10,12 +10,21 @@
     "strict": false,
     "moduleResolution": "node",
     "baseUrl": ".",
-    "typeRoots": [
-      "./node_modules/@types",
-      "./typings"
-    ],
     "paths": {
       "src/*": ["src/*"],
+      "react-native": ["src/types/any_shim.ts"],
+      "react-native-linear-gradient": ["src/types/any_shim.ts"],
+      "react-native-agora": ["src/types/any_shim.ts"],
+      "react-native-vector-icons/*": ["src/types/any_shim.ts"],
+      "react-native-reanimated": ["src/types/any_shim.ts"],
+      "@react-navigation/*": ["src/types/any_shim.ts"],
+      "@react-native-async-storage/async-storage": ["src/types/any_shim.ts"],
+      "better-auth/react": ["src/types/any_shim.ts"],
+      "socket.io-client": ["src/types/any_shim.ts"],
+      "react-native-safe-area-context": ["src/types/any_shim.ts"],
+      "react-native-haptic-feedback": ["src/types/any_shim.ts"],
+      "react-native-gesture-handler": ["src/types/any_shim.ts"],
+      "@react-native-community/blur": ["src/types/any_shim.ts"],
       "csstype": ["src/types/csstype.d.ts"]
     },
     "types": ["react"],
@@ -27,8 +36,7 @@
   },
   "include": [
     "src/**/*",
-    "index.ts",
-    "typings/**/*"
+    "index.ts"
   ],
   "exclude": [
     "node_modules"

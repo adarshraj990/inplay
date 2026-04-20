@@ -10,8 +10,8 @@ const config = {
     // We disable package exports because it causes regressions in @react-navigation/native-stack (version mismatch/missing src)
     unstable_enablePackageExports: false,
     
-    // Add 'mjs' and prioritize standard extensions to support modern ESM libraries
-    sourceExts: ['js', 'json', 'ts', 'tsx', 'mjs', ...sourceExts],
+    // Add 'mjs' to support modern ESM libraries
+    sourceExts: ['js', 'json', 'ts', 'tsx', 'mjs'],
 
     // Explicitly resolve modern subpaths for Better Auth and its internal core utilities
     resolveRequest: (context, moduleName, platform) => {
