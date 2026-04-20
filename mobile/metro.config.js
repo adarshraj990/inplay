@@ -13,23 +13,39 @@ const config = {
     // Add 'mjs' to support modern ESM libraries
     sourceExts: [...sourceExts, 'mjs'],
 
-    // Explicitly resolve modern subpaths that Metro normally fails to find without Package Exports
+    // Explicitly resolve modern subpaths for Better Auth and its internal core utilities
     resolveRequest: (context, moduleName, platform) => {
-      if (moduleName === 'better-auth/react') {
+      // 1. Handle better-auth subpaths (e.g., better-auth/react)
+      if (moduleName.startsWith('better-auth/')) {
+        const subpath = moduleName.replace('better-auth/', '');
+        // Map common subpaths known to use ESM
+        if (subpath === 'react') {
+          return {
+            filePath: path.resolve(__dirname, 'node_modules/better-auth/dist/client/react/index.mjs'),
+            type: 'sourceFile',
+          };
+        }
+        // Add more specific mappings if they continue to fail
+      }
+
+      // 2. Handle better-call subpaths (e.g., better-call/error)
+      if (moduleName.startsWith('better-call/')) {
+        const subpath = moduleName.replace('better-call/', '');
         return {
-          filePath: path.resolve(__dirname, 'node_modules/better-auth/dist/client/react/index.mjs'),
+          filePath: path.resolve(__dirname, 'node_modules/better-call/dist', `${subpath}.mjs`),
           type: 'sourceFile',
         };
       }
-      if (moduleName === 'better-call/error') {
+
+      // 3. Handle @better-auth/core subpaths (e.g., @better-auth/core/utils/string)
+      if (moduleName.startsWith('@better-auth/core/')) {
+        const subpath = moduleName.replace('@better-auth/core/', '');
+        // Better Auth core uses a dist structure for subpaths
+        const filePath = path.resolve(__dirname, 'node_modules/@better-auth/core/dist', `${subpath}.mjs`);
         return {
-          filePath: path.resolve(__dirname, 'node_modules/better-call/dist/error.mjs'),
+          filePath,
           type: 'sourceFile',
         };
-      }
-      // Optionally handle other better-auth subpaths if needed
-      if (moduleName.startsWith('better-auth/') && !moduleName.includes('/')) {
-         // Add generic mapping if more subpaths fail
       }
 
       // Default resolution for everything else
