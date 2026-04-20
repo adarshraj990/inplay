@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Keychain from 'react-native-keychain';
 import { createAuthClient } from "better-auth/react";
 import { CONFIG } from '../config';
 
@@ -10,13 +11,25 @@ export const authClient = createAuthClient({
   baseURL: authBaseURL,
   storage: {
     async getItem(key) {
+      if (key.includes('token') || key.includes('session')) {
+        const credentials = await Keychain.getGenericPassword({ service: key });
+        return credentials ? credentials.password : null;
+      }
       return await AsyncStorage.getItem(key);
     },
     async setItem(key, value) {
-      await AsyncStorage.setItem(key, value);
+      if (key.includes('token') || key.includes('session')) {
+        await Keychain.setGenericPassword('auth_token', value, { service: key });
+      } else {
+        await AsyncStorage.setItem(key, value);
+      }
     },
     async removeItem(key) {
-      await AsyncStorage.removeItem(key);
+      if (key.includes('token') || key.includes('session')) {
+        await Keychain.resetGenericPassword({ service: key });
+      } else {
+        await AsyncStorage.removeItem(key);
+      }
     }
   }
 });
