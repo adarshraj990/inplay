@@ -77,7 +77,7 @@ export default function App() {
                 bold:    { fontFamily: 'System', fontWeight: '700' },
                 heavy:   { fontFamily: 'System', fontWeight: '900' },
               },
-            }}
+            } as any}
           >
             <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
             <EmoteProvider>
