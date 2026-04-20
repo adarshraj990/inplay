@@ -7,18 +7,12 @@ workflows:
     environment:
       vars:
         CI: 1
-        EXPO_NO_TELEMETRY: 1
       node: 20
+      java: 17
     scripts:
       - name: Install dependencies
         script: |
-          npm install --legacy-peer-deps
-      - name: Generate native folders if missing
-        script: |
-          if [ ! -d "android" ]; then
-            echo "Android directory not found. Running expo prebuild..."
-            npx expo prebuild --platform android --no-install
-          fi
+          npm install
       - name: Build Android Release APK
         script: |
           cd android
