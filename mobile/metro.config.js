@@ -1,30 +1,33 @@
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { getDefaultConfig } = require('@react-native/metro-config');
 
 /**
- * METRO CONFIGURATION - PRISTINE ESM FIX (Log 20)
+ * METRO CONFIGURATION - DIRECT ESM FIX (Log 21)
  * 1. MANDATORY: unstable_enablePackageExports: true (Fixes 'better-call/error')
- * 2. ESM PRIORITY: .mjs first for compatibility.
- * 3. ZERO-MENTION: Aggressive removal of deprecated keys.
+ * 2. ESM PRIORITY: .mjs first in sourceExts.
+ * 3. ZERO-MENTION: Physically deleted all deprecated server and watcher keys.
  */
 
-const defaultConfig = getDefaultConfig(__dirname);
+const config = getDefaultConfig(__dirname);
 
-// PHYSICALLY PURGE DEPRECATED KEYS
-if (defaultConfig.server) {
-  delete defaultConfig.server.tls;
-  delete defaultConfig.server.lazySha1;
+// 1. Enable Package Exports for sub-path resolution (better-call, socket.io)
+config.resolver.unstable_enablePackageExports = true;
+
+// 2. Set ESM Extension Priority
+config.resolver.sourceExts = ['mjs', 'js', 'jsx', 'json', 'ts', 'tsx'];
+
+// 3. AGGRESSIVE CLEANUP: Explicitly delete deprecated keys to stop validation warnings
+if (config.server) {
+  delete config.server.tls;
+  delete config.server.lazySha1;
 }
-delete defaultConfig.watcher;
 
-const config = {
-  resolver: {
-    // REQUIRED for modern ESM libraries with sub-path exports
-    unstable_enablePackageExports: true,
-    // Priority extensions for module resolution
-    sourceExts: ['mjs', 'js', 'jsx', 'json', 'ts', 'tsx'],
-  },
-};
+if (config.watcher) {
+  delete config.watcher.unstable_autoSaveCache;
+}
+// Fully remove watcher block to be safe
+delete config.watcher;
 
-module.exports = mergeConfig(defaultConfig, config);
+module.exports = config;
+
 
 
