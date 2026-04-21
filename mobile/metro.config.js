@@ -7,7 +7,7 @@ const { assetExts, sourceExts } = defaultConfig.resolver;
 /** @type {import('metro-config').MetroConfig} */
 const config = {
   resolver: {
-    // We disable package exports because it causes regressions in @react-navigation/native-stack (version mismatch/missing src)
+    // We disable package exports because it causes regressions in @react-navigation/native-stack
     unstable_enablePackageExports: false,
     
     // Add 'mjs' to support modern ESM libraries
@@ -15,20 +15,18 @@ const config = {
 
     // Explicitly resolve modern subpaths for Better Auth and its internal core utilities
     resolveRequest: (context, moduleName, platform) => {
-      // 1. Handle better-auth subpaths (e.g., better-auth/react)
+      // 1. Handle better-auth subpaths
       if (moduleName.startsWith('better-auth/')) {
         const subpath = moduleName.replace('better-auth/', '');
-        // Map common subpaths known to use ESM
         if (subpath === 'react') {
           return {
             filePath: path.resolve(__dirname, 'node_modules/better-auth/dist/client/react/index.mjs'),
             type: 'sourceFile',
           };
         }
-        // Add more specific mappings if they continue to fail
       }
 
-      // 2. Handle better-call subpaths (e.g., better-call/error)
+      // 2. Handle better-call subpaths
       if (moduleName.startsWith('better-call/')) {
         const subpath = moduleName.replace('better-call/', '');
         return {
@@ -37,10 +35,9 @@ const config = {
         };
       }
 
-      // 3. Handle @better-auth/core subpaths (e.g., @better-auth/core/utils/string)
+      // 3. Handle @better-auth/core subpaths
       if (moduleName.startsWith('@better-auth/core/')) {
         const subpath = moduleName.replace('@better-auth/core/', '');
-        // Better Auth core uses a dist structure for subpaths
         const filePath = path.resolve(__dirname, 'node_modules/@better-auth/core/dist', `${subpath}.mjs`);
         return {
           filePath,
@@ -51,6 +48,12 @@ const config = {
       // Default resolution for everything else
       return context.resolveRequest(context, moduleName, platform);
     },
+  },
+  // Ensure we don't have deprecated watcher/server options that cause SHA-1 issues
+  watcher: {
+    // Disabling these as they are known to cause SHA-1 computation issues on some CI environments
+    unstable_lazySha1: false,
+    unstable_autoSaveCache: false,
   },
 };
 
