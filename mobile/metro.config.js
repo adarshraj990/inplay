@@ -1,39 +1,35 @@
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { getDefaultConfig } = require('@react-native/metro-config');
 
 /**
- * METRO CONFIGURATION - DIRECT ESM FIX (Log 25)
+ * METRO CONFIGURATION - PRISTINE ESM FIX (Log 26)
  * 1. MANDATORY: unstable_enablePackageExports: true (Fixes 'better-call/error')
- * 2. ESM PRIORITY: .mjs first in sourceExts.
- * 3. AGGRESSIVE CLEANUP: Physically purged 'watcher.unstable_autoSaveCache' and server keys.
+ * 2. ESM PRIORITY: .mjs first for Better Auth compatibility
+ * 3. ZERO-MENTION: Physically purged 'unstable_autoSaveCache' and server keys.
  */
 
-const defaultConfig = getDefaultConfig(__dirname);
+const config = getDefaultConfig(__dirname);
 
-// --- AGGRESSIVE SCRUBBING OF DEPRECATED KEYS ---
-// Physically remove keys that trigger validation warnings in Log 25
-if (defaultConfig.server) {
-  delete defaultConfig.server.tls;
-  delete defaultConfig.server.lazySha1;
-  delete defaultConfig.server.unstable_lazySha1;
+// 1. ENABLE PACKAGE EXPORTS (Sub-path resolution)
+config.resolver.unstable_enablePackageExports = true;
+
+// 2. SET ESM EXTENSION PRIORITY
+config.resolver.sourceExts = ['mjs', 'js', 'jsx', 'json', 'ts', 'tsx'];
+
+// 3. AGGRESSIVE CLEANUP: Remove deprecated keys to silence Log 26 warnings
+if (config.server) {
+  delete config.server.tls;
+  delete config.server.lazySha1;
+  delete config.server.unstable_lazySha1;
 }
 
-if (defaultConfig.watcher) {
-  // Explicitly delete the key mentioned in the Log 25 warning
-  delete defaultConfig.watcher.unstable_autoSaveCache;
+if (config.watcher) {
+  delete config.watcher.unstable_autoSaveCache;
 }
-// Fully remove the watcher block to ensure zero-mention
-delete defaultConfig.watcher;
+// Remove the entire watcher block to be 100% clean
+delete config.watcher;
 
-const config = {
-  resolver: {
-    // REQUIRED for modern ESM libraries with sub-path exports
-    unstable_enablePackageExports: true,
-    // Priority extensions for module resolution
-    sourceExts: ['mjs', 'js', 'jsx', 'json', 'ts', 'tsx'],
-  },
-};
+module.exports = config;
 
-module.exports = mergeConfig(defaultConfig, config);
 
 
 
