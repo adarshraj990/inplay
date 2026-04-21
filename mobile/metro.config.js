@@ -1,19 +1,26 @@
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { getDefaultConfig } = require('@react-native/metro-config');
 const path = require('path');
 
 const defaultConfig = getDefaultConfig(__dirname);
 
 /**
- * METRO CONFIGURATION - PRISTINE REWRITE
- * Force .mjs prioritization and purge all legacy artifacts.
- * This file contains NO mentions of deprecated 'server' or 'watcher' keys.
+ * METRO CONFIGURATION - SELECTIVE EXPORT STRATEGY
+ * We bypass mergeConfig to ensure 'server' and 'watcher' blocks are completely purged.
+ * This physically prevents 'server.tls' and 'unstable_lazySha1' from existing.
  */
-const config = {
+module.exports = {
+  // 1. Transformer and Serializer from defaults
+  transformer: defaultConfig.transformer,
+  serializer: defaultConfig.serializer,
+
+  // 2. Customized Resolver
   resolver: {
-    // 1. .mjs is now the absolute first priority
+    ...defaultConfig.resolver,
+    
+    // PRIORITY: .mjs is EVALUATED FIRST to ensure Better Auth is indexed early
     sourceExts: ['mjs', 'js', 'json', 'ts', 'tsx'],
     
-    // 2. Comprehensive asset support for gaming (glb, gltf, obj, mtl, bin)
+    // Comprehensive asset support for gaming
     assetExts: [...defaultConfig.resolver.assetExts, 'glb', 'gltf', 'obj', 'mtl', 'bin'],
 
     unstable_enablePackageExports: false,
@@ -46,6 +53,7 @@ const config = {
       return context.resolveRequest(context, moduleName, platform);
     },
   },
+  
+  // 3. PHYSICAL PURGE: We omit 'server' and 'watcher' blocks entirely.
+  // They are NOT merged and therefore cannot trigger 'Unknown option' warnings.
 };
-
-module.exports = mergeConfig(defaultConfig, config);
