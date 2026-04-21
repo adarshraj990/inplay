@@ -1,21 +1,32 @@
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('path');
 
+/**
+ * METRO CONFIGURATION - TOTAL REWRITE
+ * Physically removing all legacy and unstable options to resolve Indplay build failures.
+ */
+
 const defaultConfig = getDefaultConfig(__dirname);
-const { assetExts, sourceExts } = defaultConfig.resolver;
+
+// PHYSICAL DELETION of legacy/unstable keys from the default config object
+if (defaultConfig.server) delete defaultConfig.server.tls;
+if (defaultConfig.watcher) {
+  delete defaultConfig.watcher.unstable_lazySha1;
+  delete defaultConfig.watcher.unstable_autoSaveCache;
+}
 
 /** @type {import('metro-config').MetroConfig} */
 const config = {
   resolver: {
+    // Explicitly add 'mjs' for modern ESM libraries like Better Auth
+    sourceExts: [...defaultConfig.resolver.sourceExts, 'mjs'],
+    
     // We disable package exports because it causes regressions in @react-navigation/native-stack
     unstable_enablePackageExports: false,
-    
-    // Add 'mjs' to support modern ESM libraries
-    sourceExts: ['js', 'json', 'ts', 'tsx', 'mjs'],
 
-    // Explicitly resolve modern subpaths for Better Auth and its internal core utilities
+    // Manual resolution for ESM subpaths to ensure SHA-1 computation succeeds
     resolveRequest: (context, moduleName, platform) => {
-      // 1. Handle better-auth subpaths
+      // 1. better-auth
       if (moduleName.startsWith('better-auth/')) {
         const subpath = moduleName.replace('better-auth/', '');
         if (subpath === 'react') {
@@ -26,7 +37,7 @@ const config = {
         }
       }
 
-      // 2. Handle better-call subpaths
+      // 2. better-call
       if (moduleName.startsWith('better-call/')) {
         const subpath = moduleName.replace('better-call/', '');
         return {
@@ -35,7 +46,7 @@ const config = {
         };
       }
 
-      // 3. Handle @better-auth/core subpaths
+      // 3. @better-auth/core
       if (moduleName.startsWith('@better-auth/core/')) {
         const subpath = moduleName.replace('@better-auth/core/', '');
         const filePath = path.resolve(__dirname, 'node_modules/@better-auth/core/dist', `${subpath}.mjs`);
@@ -45,7 +56,6 @@ const config = {
         };
       }
 
-      // Default resolution for everything else
       return context.resolveRequest(context, moduleName, platform);
     },
   },
