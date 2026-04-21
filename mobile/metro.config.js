@@ -49,12 +49,6 @@ const config = {
       return context.resolveRequest(context, moduleName, platform);
     },
   },
-  // Ensure we don't have deprecated watcher/server options that cause SHA-1 issues
-  watcher: {
-    // Disabling these as they are known to cause SHA-1 computation issues on some CI environments
-    unstable_lazySha1: false,
-    unstable_autoSaveCache: false,
-  },
 };
 
 module.exports = mergeConfig(defaultConfig, config);
