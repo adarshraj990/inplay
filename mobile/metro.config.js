@@ -1,34 +1,30 @@
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
 /**
- * METRO CONFIGURATION - PRISTINE ESM FIX
- * 1. unstable_enablePackageExports: true (Fixes 'better-call/error' resolution)
- * 2. Priority extensions: .mjs first for Better Auth compatibility
- * 3. EXPLICITLY CLEAN: No 'server.tls', 'server.lazySha1', or 'watcher' blocks.
+ * METRO CONFIGURATION - PRISTINE ESM FIX (Log 20)
+ * 1. MANDATORY: unstable_enablePackageExports: true (Fixes 'better-call/error')
+ * 2. ESM PRIORITY: .mjs first for compatibility.
+ * 3. ZERO-MENTION: Aggressive removal of deprecated keys.
  */
 
 const defaultConfig = getDefaultConfig(__dirname);
 
+// PHYSICALLY PURGE DEPRECATED KEYS
+if (defaultConfig.server) {
+  delete defaultConfig.server.tls;
+  delete defaultConfig.server.lazySha1;
+}
+delete defaultConfig.watcher;
+
 const config = {
   resolver: {
-    // MANDATORY: Enable package exports to find sub-modules like better-call/error
+    // REQUIRED for modern ESM libraries with sub-path exports
     unstable_enablePackageExports: true,
-    // Priority extensions: mjs must come first for modern ESM library support
+    // Priority extensions for module resolution
     sourceExts: ['mjs', 'js', 'jsx', 'json', 'ts', 'tsx'],
   },
 };
 
-// Merge configurations
-const mergedConfig = mergeConfig(defaultConfig, config);
+module.exports = mergeConfig(defaultConfig, config);
 
-// CRITICAL CLEANUP: Ensure no invalid/deprecated keys exist in the final config
-if (mergedConfig.server) {
-  delete mergedConfig.server.tls;
-  delete mergedConfig.server.lazySha1; 
-}
-
-// Ensure no watcher blocks are present if they were somehow merged
-delete mergedConfig.watcher;
-
-module.exports = mergedConfig;
 
