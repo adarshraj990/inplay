@@ -1,15 +1,16 @@
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
 /**
- * METRO CONFIGURATION - TOTAL REWRITE (Log 22)
- * 1. MANDATORY: unstable_enablePackageExports: true
- * 2. ESM PRIORITY: .mjs first for Better Auth.
- * 3. AGGRESSIVE PURGE: Physically deleted server.tls, lazySha1, and autoSaveCache.
+ * METRO CONFIGURATION - PRISTINE ESM FIX (Log 23)
+ * 1. MANDATORY: unstable_enablePackageExports: true (Fixes 'better-call/error')
+ * 2. ESM PRIORITY: .mjs first for Better Auth compatibility
+ * 3. AGGRESSIVE CLEANUP: Physically purged 'watcher.unstable_autoSaveCache' and server keys.
  */
 
 const defaultConfig = getDefaultConfig(__dirname);
 
-// --- PHYSICAL PURGE OF DEPRECATED KEYS ---
+// --- MANDATORY SCRUBBING ---
+// Physically remove deprecated keys that trigger validation warnings in Log 23
 if (defaultConfig.server) {
   delete defaultConfig.server.tls;
   delete defaultConfig.server.lazySha1;
@@ -17,21 +18,23 @@ if (defaultConfig.server) {
 }
 
 if (defaultConfig.watcher) {
+  // Explicitly remove the specific key mentioned in Log 23
   delete defaultConfig.watcher.unstable_autoSaveCache;
 }
+// Fully remove the watcher block to ensure zero-mention
 delete defaultConfig.watcher;
 
-// --- FINAL CLEAN CONFIGURATION ---
 const config = {
   resolver: {
-    // Required to resolve sub-paths like 'better-call/error'
+    // REQUIRED: Enable package exports to find sub-modules like better-call/error
     unstable_enablePackageExports: true,
-    // ESM Support
+    // Priority extensions for modern ESM library support
     sourceExts: ['mjs', 'js', 'jsx', 'json', 'ts', 'tsx'],
   },
 };
 
 module.exports = mergeConfig(defaultConfig, config);
+
 
 
 
