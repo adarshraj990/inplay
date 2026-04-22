@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 # /ios
 # /android
+
+# debug artifacts (crash logs, batch scripts)
+crash_log_*.txt
+capture_crash_log.bat

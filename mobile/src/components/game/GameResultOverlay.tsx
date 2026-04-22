@@ -46,10 +46,12 @@ const GameResultOverlay: React.FC<GameResultOverlayProps> = ({
     <View style={StyleSheet.absoluteFill}>
       <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
         <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
-          <LinearGradient
-            colors={[Colors.surface, 'rgba(26, 26, 46, 0.95)']}
-            style={styles.gradientBg}
-          >
+          <View style={styles.gradientBgWrapper}>
+            <LinearGradient
+              colors={[Colors.surface, 'rgba(26, 26, 46, 0.95)']}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={styles.gradientBg}>
             {winner ? (
               // ── Winner Circle View ──
               <View style={styles.content}>
@@ -99,7 +101,8 @@ const GameResultOverlay: React.FC<GameResultOverlayProps> = ({
                 </TouchableOpacity>
               </View>
             )}
-          </LinearGradient>
+            </View>
+          </View>
         </Animated.View>
       </Animated.View>
     </View>
@@ -109,6 +112,7 @@ const GameResultOverlay: React.FC<GameResultOverlayProps> = ({
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: Spacing.xl },
   card: { backgroundColor: Colors.surface, borderRadius: Radius.xxl, width: width * 0.85, borderWidth: 1, borderColor: Colors.surfaceBorder, overflow: 'hidden', elevation: 20 },
+  gradientBgWrapper: { overflow: 'hidden' },
   gradientBg: { padding: Spacing.xl, alignItems: 'center' },
   content: { alignItems: 'center', width: '100%', gap: Spacing.md },
   

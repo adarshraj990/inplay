@@ -7,7 +7,7 @@ export const useNotificationStats = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await apiService.get('/friends/notifications/stats');
+      const response = await apiService.get('/social/notifications/stats');
       if (response.data.success) {
         setUnreadCount(response.data.data.total);
       }
