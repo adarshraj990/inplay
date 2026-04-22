@@ -36,6 +36,7 @@
     "socket.io-client": "^4.7.4"
   },
   "devDependencies": {
+    "@babel/plugin-transform-export-namespace-from": "^7.27.1",
     "@react-native-community/cli": "latest",
     "@react-native/metro-config": "^0.85.1",
     "@types/node": "^25.6.0",
