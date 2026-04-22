@@ -1,27 +1,22 @@
 const { getDefaultConfig } = require('@react-native/metro-config');
 
 /**
- * METRO CONFIGURATION - CRITICAL REWRITE (Log 27 Fix)
+ * METRO CONFIGURATION - PRISTINE REWRITE (Log 29 Emergency Fix)
  * 1. MANDATORY: unstable_enablePackageExports: true
- * 2. ESM PRIORITY: .mjs first for Better Auth compatibility
- * 3. PURGE: Removed all deprecated server and watcher keys causing validator errors.
+ * 2. ESM PRIORITY: .mjs FIRST
+ * 3. PRISTINE: Removed all deprecated server and watcher keys entirely.
  */
 
 const config = getDefaultConfig(__dirname);
 
-const {
-  resolver: { sourceExts, assetExts },
-} = config;
+// 1. SET EXTENSION PRIORITY (.mjs MUST BE FIRST)
+config.resolver.sourceExts = ['mjs', 'js', 'jsx', 'json', 'ts', 'tsx'];
 
-// 1. SET PRIORITY: .mjs MUST BE FIRST
-config.resolver.sourceExts = ['mjs', ...sourceExts];
-
-// 2. ENABLE EXPORTS: Fixes 'better-call/error' resolution
+// 2. ENABLE PACKAGE EXPORTS
 config.resolver.unstable_enablePackageExports = true;
 
-// 3. PRISTINE CONFIG: Kill deprecated keys immediately
-// Metro validates these keys even if they are empty objects in some versions
-// We remove them entirely from the final exported config object.
+// 3. NUCLEAR REMOVAL OF DEPRECATED KEYS
+// We delete the entire blocks to ensure zero presence of 'server.tls', etc.
 delete config.server;
 delete config.watcher;
 
