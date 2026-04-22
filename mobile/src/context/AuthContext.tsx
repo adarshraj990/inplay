@@ -6,19 +6,20 @@ import * as Keychain from 'react-native-keychain';
 import BetterAuthReact from 'better-auth/react';
 
 // ─── Resilience Wrapper ───────────────────────────────────────────────────────
-// We wrap the client creation in a function to avoid top-level crashes.
-// If better-auth fails to initialize (e.g. due to URL validation in Hermes),
-// the app module will still load, preventing the "AuthProvider is undefined" crash.
 let authClient: any = null;
+let authInitError: string | null = null;
 
 try {
   const createAuthClient = (BetterAuthReact as any).createAuthClient ?? 
                           (BetterAuthReact as any).default?.createAuthClient;
 
   if (typeof createAuthClient === 'function') {
+    // CRITICAL: better-auth client initialization
+    // We use a clean URL and explicitly set the basePath to match the server mounting point.
     authClient = createAuthClient({
-      // Adding trailing slash to ensure URL parser is happy
-      baseURL: 'https://indplay-backend-v3.onrender.com/',
+      baseURL: 'https://indplay-backend-v3.onrender.com',
+      // Explicitly pointing to where the auth handler is mounted on the Express server
+      basePath: '/api/auth', 
       storage: {
         async getItem(key: string) {
           try {
@@ -28,7 +29,6 @@ try {
             }
             return await AsyncStorage.getItem(key);
           } catch (e) {
-            console.warn('[Auth] Storage Get Error:', e);
             return null;
           }
         },
@@ -39,9 +39,7 @@ try {
             } else {
               await AsyncStorage.setItem(key, value);
             }
-          } catch (e) {
-            console.warn('[Auth] Storage Set Error:', e);
-          }
+          } catch (e) {}
         },
         async removeItem(key: string) {
           try {
@@ -50,22 +48,38 @@ try {
             } else {
               await AsyncStorage.removeItem(key);
             }
-          } catch (e) {
-            console.warn('[Auth] Storage Remove Error:', e);
-          }
+          } catch (e) {}
         },
       },
+      // Headers/Fetch options for Android stability
+      fetchOptions: {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        // If the server is warming up (Render), we want a decent timeout
+        timeout: 30000,
+      }
     });
+    console.log('[Auth] Success: Better-Auth client initialized with baseURL: https://indplay-backend-v3.onrender.com');
   } else {
-    console.error('[Auth] createAuthClient is not a function. Import failed.');
+    authInitError = 'createAuthClient is not a function - Import resolution failure';
+    console.error('[Auth] Error:', authInitError);
   }
-} catch (error) {
-  console.error('[Auth] CRITICAL: Failed to initialize Better-Auth client:', error);
-  // Create a dummy object to prevent property access crashes
+} catch (error: any) {
+  authInitError = error?.message || String(error);
+  // DETAILED LOGGING FOR LOGCAT AS REQUESTED
+  console.error('============================================================');
+  console.error('[Auth] FATAL INITIALIZATION ERROR');
+  console.error('[Auth] Message:', authInitError);
+  if (error?.stack) console.error('[Auth] Stack:', error.stack);
+  console.error('============================================================');
+  
+  // Fallback dummy object to prevent app-wide crash
   authClient = {
-    useSession: () => ({ data: null, isPending: false, error: error }),
-    signIn: { email: async () => ({ error: { message: 'Auth failed to init' } }) },
-    signUp: { email: async () => ({ error: { message: 'Auth failed to init' } }) },
+    useSession: () => ({ data: null, isPending: false, error: authInitError }),
+    signIn: { email: async () => ({ error: { message: 'Auth failed to init: ' + authInitError } }) },
+    signUp: { email: async () => ({ error: { message: 'Auth failed to init: ' + authInitError } }) },
     signOut: async () => {},
   };
 }
@@ -94,6 +108,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
+  initError: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,10 +117,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Safety: Ensure authClient exists
+  // Safety: check if session hook exists
   const sessionHook = authClient?.useSession;
-  const sessionData = sessionHook ? sessionHook() : { data: null, isPending: false };
-  const { data: session, isPending: isLoadingSession } = sessionData;
+  const sessionResult = sessionHook ? sessionHook() : { data: null, isPending: false };
+  const { data: session, isPending: isLoadingSession } = sessionResult;
 
   useEffect(() => {
     if (session?.user) {
@@ -128,7 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsActionLoading(true);
     try {
-      if (!authClient?.signIn?.email) throw new Error('Auth client not initialized');
+      if (authInitError) throw new Error('Auth system failed to initialize: ' + authInitError);
       const { error } = await authClient.signIn.email({ email, password });
       if (error) throw new Error(error.message || 'Login failed');
     } catch (e: any) {
@@ -142,7 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (username: string, email: string, password: string) => {
     setIsActionLoading(true);
     try {
-      if (!authClient?.signUp?.email) throw new Error('Auth client not initialized');
+      if (authInitError) throw new Error('Auth system failed to initialize: ' + authInitError);
       const { error } = await (authClient.signUp.email as any)({
         email,
         password,
@@ -196,7 +211,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{ user, session, isLoading, login, register, logout, refreshProfile, forgotPassword }}
+      value={{ 
+        user, 
+        session, 
+        isLoading, 
+        login, 
+        register, 
+        logout, 
+        refreshProfile, 
+        forgotPassword,
+        initError: authInitError 
+      }}
     >
       {children}
     </AuthContext.Provider>
