@@ -8,12 +8,13 @@ import BetterAuthReact from 'better-auth/react';
 // Use simple creation with requested trailing slash
 const AUTH_URL = 'https://indplay-backend-v3.onrender.com/';
 
-// Keep creation in a simple try-catch to prevent "Invalid URL" top-level crash
-// but keep the logic "smooth" as requested.
 let authClient: any;
+let isInitialized = false;
 
 try {
   const factory = (BetterAuthReact as any).createAuthClient || (BetterAuthReact as any).default?.createAuthClient;
+  if (typeof factory !== 'function') throw new Error('BetterAuth factory not found');
+  
   authClient = factory({
     baseURL: AUTH_URL,
     storage: {
@@ -46,9 +47,16 @@ try {
       },
     },
   });
+  isInitialized = true;
 } catch (e) {
-  console.warn('BetterAuth failed to initialize, using fallback');
-  authClient = { useSession: () => ({ data: null, isPending: false }) };
+  console.warn('[Auth] Initialization failed:', e);
+  // Robust fallback to prevent "cannot read property email of undefined"
+  authClient = {
+    useSession: () => ({ data: null, isPending: false }),
+    signIn: { email: () => Promise.reject(new Error('Auth not initialized')) },
+    signUp: { email: () => Promise.reject(new Error('Auth not initialized')) },
+    signOut: () => Promise.resolve(),
+  };
 }
 
 export { authClient };
@@ -75,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (session?.user) {
       setUser({
         ...session.user,
-        username: session.user.email.split('@')[0],
+        username: session.user.email?.split('@')[0] || 'user',
       });
     } else {
       setUser(null);
@@ -83,18 +91,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [session]);
 
   const login = async (email: string, password: string) => {
+    if (!isInitialized) throw new Error('Authentication system failed to start. Please check your internet or try again later.');
     setIsActionLoading(true);
     try {
-      await authClient.signIn.email({ email, password });
+      const result = await authClient.signIn.email({ email, password });
+      if (result?.error) throw new Error(result.error.message || 'Login failed');
+    } catch (e: any) {
+      throw new Error(e.message || 'Login failed');
     } finally {
       setIsActionLoading(false);
     }
   };
 
   const register = async (username: string, email: string, password: string) => {
+    if (!isInitialized) throw new Error('Authentication system failed to start. Please check your internet or try again later.');
     setIsActionLoading(true);
     try {
-      await (authClient.signUp.email as any)({ email, password, name: username, username });
+      const result = await (authClient.signUp.email as any)({ email, password, name: username, username });
+      if (result?.error) throw new Error(result.error.message || 'Registration failed');
+    } catch (e: any) {
+      throw new Error(e.message || 'Registration failed');
     } finally {
       setIsActionLoading(false);
     }
@@ -105,6 +121,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await authClient.signOut();
       setUser(null);
+    } catch (e) {
+      console.error('Logout error:', e);
     } finally {
       setIsActionLoading(false);
     }
