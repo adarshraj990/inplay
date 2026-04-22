@@ -38,7 +38,38 @@ class GlobalErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <SafeAreaView style={styles.container}><View style={styles.content}><View style={styles.iconContainer}><LinearGradient colors={[Colors.danger, '#991B1B']} style={styles.circle}><Ionicons name="alert-circle" size={50} color="white" /></LinearGradient></View><Text style={styles.title}>Something went wrong</Text><Text style={styles.subtitle}>An unexpected error occurred in the game interface. We've been notified.</Text><View style={styles.errorBox}><Text style={styles.errorText} numberOfLines={3}>{String(this.state.error?.message || this.state.error || 'Unknown Rendering Error')}</Text></View><TouchableOpacity style={styles.button} onPress={this.handleReset} activeOpacity={0.8}><LinearGradient colors={Colors.gradientTurquoise} style={styles.gradient}><Text style={styles.buttonText}>Reload Interface</Text></LinearGradient></TouchableOpacity></View></SafeAreaView>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.content}>
+            <View style={styles.iconContainer}>
+              {/* Use View wrapper to apply style since LinearGradient types vary */}
+              <View style={styles.circle}>
+                <LinearGradient
+                  colors={[Colors.danger, '#991B1B']}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Ionicons name="alert-circle" size={50} color="white" />
+              </View>
+            </View>
+            <Text style={styles.title}>Something went wrong</Text>
+            <Text style={styles.subtitle}>
+              An unexpected error occurred in the game interface. We've been notified.
+            </Text>
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText} numberOfLines={3}>
+                {String(this.state.error?.message || this.state.error || 'Unknown Rendering Error')}
+              </Text>
+            </View>
+            <TouchableOpacity style={styles.button} onPress={this.handleReset} activeOpacity={0.8}>
+              <View style={styles.gradientWrapper}>
+                <LinearGradient
+                  colors={Colors.gradientTurquoise as string[]}
+                  style={styles.gradient}
+                />
+                <Text style={styles.buttonText}>Reload Interface</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       );
     }
 
@@ -66,6 +97,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
     shadowColor: Colors.danger,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
@@ -105,15 +137,19 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     overflow: 'hidden',
   },
-  gradient: {
+  gradientWrapper: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  gradient: {
+    ...StyleSheet.absoluteFillObject,
   },
   buttonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: '800',
+    zIndex: 1,
   },
 });
 

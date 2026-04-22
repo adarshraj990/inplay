@@ -1,8 +1,6 @@
 package com.adarshk8.indplaymonorepo
 
 import android.app.Application
-import android.content.res.Configuration
-import androidx.annotation.NonNull
 
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -13,7 +11,6 @@ import com.facebook.react.config.ReactFeatureFlags
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
-import com.facebook.react.flipper.ReactNativeFlipper
 import com.facebook.soloader.SoLoader
 
 class MainApplication : Application(), ReactApplication {
@@ -22,8 +19,7 @@ class MainApplication : Application(), ReactApplication {
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
-              // Packages that cannot be autolinked yet can be added manually here, for example:
-              // add(MyReactNativePackage())
+              // Packages that cannot be autolinked yet can be added manually here
             }
 
         override fun getJSMainModuleName(): String = "index"
@@ -44,11 +40,9 @@ class MainApplication : Application(), ReactApplication {
       ReactFeatureFlags.unstable_useRuntimeSchedulerAlways = false
     }
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      // If you opted-in for the New Architecture, we load the native entry point for this app.
       load()
     }
-    if (BuildConfig.DEBUG) {
-      ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
-    }
+    // NOTE: ReactNativeFlipper removed — it does not exist in Release builds
+    // and causes a NoClassDefFoundError crash on launch.
   }
 }
