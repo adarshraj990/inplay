@@ -3,55 +3,74 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Keychain from 'react-native-keychain';
 
 // ─── Import Strategy ──────────────────────────────────────────────────────────
-// Use default import to avoid Hermes ESM named-export resolution failure.
-// "better-auth/react" exports createAuthClient as a named export inside an
-// ESM module; on Hermes the bundled form sometimes resolves the module as
-// `undefined` when using destructured imports.
 import BetterAuthReact from 'better-auth/react';
-const createAuthClient: typeof BetterAuthReact.createAuthClient =
-  (BetterAuthReact as any).createAuthClient ??
-  (BetterAuthReact as any).default?.createAuthClient;
 
-// ─── Base URL ─────────────────────────────────────────────────────────────────
-// CRITICAL: better-auth expects the SERVER root URL (no /api/v1 suffix).
-// Passing a URL with a path suffix causes "Invalid base URL" BetterAuthError.
-const AUTH_BASE_URL = 'https://indplay-backend-v3.onrender.com';
+// ─── Resilience Wrapper ───────────────────────────────────────────────────────
+// We wrap the client creation in a function to avoid top-level crashes.
+// If better-auth fails to initialize (e.g. due to URL validation in Hermes),
+// the app module will still load, preventing the "AuthProvider is undefined" crash.
+let authClient: any = null;
 
-// ─── Auth Client ─────────────────────────────────────────────────────────────
-export const authClient = createAuthClient({
-  baseURL: AUTH_BASE_URL,
-  storage: {
-    async getItem(key: string) {
-      try {
-        if (key.includes('token') || key.includes('session')) {
-          const credentials = await Keychain.getGenericPassword({ service: key });
-          return credentials ? credentials.password : null;
-        }
-        return await AsyncStorage.getItem(key);
-      } catch {
-        return null;
-      }
-    },
-    async setItem(key: string, value: string) {
-      try {
-        if (key.includes('token') || key.includes('session')) {
-          await Keychain.setGenericPassword('auth_token', value, { service: key });
-        } else {
-          await AsyncStorage.setItem(key, value);
-        }
-      } catch {}
-    },
-    async removeItem(key: string) {
-      try {
-        if (key.includes('token') || key.includes('session')) {
-          await Keychain.resetGenericPassword({ service: key });
-        } else {
-          await AsyncStorage.removeItem(key);
-        }
-      } catch {}
-    },
-  },
-});
+try {
+  const createAuthClient = (BetterAuthReact as any).createAuthClient ?? 
+                          (BetterAuthReact as any).default?.createAuthClient;
+
+  if (typeof createAuthClient === 'function') {
+    authClient = createAuthClient({
+      // Adding trailing slash to ensure URL parser is happy
+      baseURL: 'https://indplay-backend-v3.onrender.com/',
+      storage: {
+        async getItem(key: string) {
+          try {
+            if (key.includes('token') || key.includes('session')) {
+              const credentials = await Keychain.getGenericPassword({ service: key });
+              return credentials ? credentials.password : null;
+            }
+            return await AsyncStorage.getItem(key);
+          } catch (e) {
+            console.warn('[Auth] Storage Get Error:', e);
+            return null;
+          }
+        },
+        async setItem(key: string, value: string) {
+          try {
+            if (key.includes('token') || key.includes('session')) {
+              await Keychain.setGenericPassword('auth_token', value, { service: key });
+            } else {
+              await AsyncStorage.setItem(key, value);
+            }
+          } catch (e) {
+            console.warn('[Auth] Storage Set Error:', e);
+          }
+        },
+        async removeItem(key: string) {
+          try {
+            if (key.includes('token') || key.includes('session')) {
+              await Keychain.resetGenericPassword({ service: key });
+            } else {
+              await AsyncStorage.removeItem(key);
+            }
+          } catch (e) {
+            console.warn('[Auth] Storage Remove Error:', e);
+          }
+        },
+      },
+    });
+  } else {
+    console.error('[Auth] createAuthClient is not a function. Import failed.');
+  }
+} catch (error) {
+  console.error('[Auth] CRITICAL: Failed to initialize Better-Auth client:', error);
+  // Create a dummy object to prevent property access crashes
+  authClient = {
+    useSession: () => ({ data: null, isPending: false, error: error }),
+    signIn: { email: async () => ({ error: { message: 'Auth failed to init' } }) },
+    signUp: { email: async () => ({ error: { message: 'Auth failed to init' } }) },
+    signOut: async () => {},
+  };
+}
+
+export { authClient };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface User {
@@ -77,18 +96,16 @@ interface AuthContextType {
   forgotPassword: (email: string) => Promise<void>;
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Guard: useSession may not exist if module resolved incorrectly
+  // Safety: Ensure authClient exists
   const sessionHook = authClient?.useSession;
-  const { data: session, isPending: isLoadingSession } = sessionHook
-    ? sessionHook()
-    : { data: null, isPending: false };
+  const sessionData = sessionHook ? sessionHook() : { data: null, isPending: false };
+  const { data: session, isPending: isLoadingSession } = sessionData;
 
   useEffect(() => {
     if (session?.user) {
@@ -111,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsActionLoading(true);
     try {
+      if (!authClient?.signIn?.email) throw new Error('Auth client not initialized');
       const { error } = await authClient.signIn.email({ email, password });
       if (error) throw new Error(error.message || 'Login failed');
     } catch (e: any) {
@@ -124,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (username: string, email: string, password: string) => {
     setIsActionLoading(true);
     try {
+      if (!authClient?.signUp?.email) throw new Error('Auth client not initialized');
       const { error } = await (authClient.signUp.email as any)({
         email,
         password,
@@ -142,7 +161,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setIsActionLoading(true);
     try {
-      await authClient.signOut();
+      if (authClient?.signOut) {
+        await authClient.signOut();
+      }
       setUser(null);
     } catch (e) {
       console.error('Logout error:', e);
@@ -154,11 +175,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const forgotPassword = async (email: string) => {
     setIsActionLoading(true);
     try {
-      const { error } = await (authClient as any).password.forgetPassword({
-        email,
-        redirectTo: '/reset-password',
-      });
-      if (error) throw new Error(error.message || 'Failed to send reset email');
+      if (authClient?.password?.forgetPassword) {
+        const { error } = await authClient.password.forgetPassword({
+          email,
+          redirectTo: '/reset-password',
+        });
+        if (error) throw new Error(error.message || 'Failed to send reset email');
+      }
     } catch (e: any) {
       console.error('Forgot password error:', e);
       throw e;
