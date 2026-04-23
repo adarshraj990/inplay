@@ -47,6 +47,8 @@ export class AppConfig {
     if (this.isProduction && !this.betterAuthApiKey) {
       console.warn('\n[WARNING] BETTER_AUTH_API_KEY is not set. The Better-Auth dashboard may not function correctly.');
       console.warn('Please ensure this is set on Render.com environment settings.\n');
+    } else if (this.betterAuthApiKey) {
+      console.log(`[Config] Better-Auth API Key loaded: ${this.betterAuthApiKey.substring(0, 6)}...`);
     }
 
     console.log(`[Config] Better-Auth URL: ${this.betterAuthUrl}`);
