@@ -13,13 +13,13 @@
       },
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://indplay-backend-v3.onrender.com",
+        "EXPO_PUBLIC_API_URL": "https://indplay-backend-v3-ghjr.onrender.com",
         "EXPO_PUBLIC_AGORA_APP_ID": "d4a3ee9b40a04436a1bc8743190a4183"
       }
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://indplay-backend-v3.onrender.com",
+        "EXPO_PUBLIC_API_URL": "https://indplay-backend-v3-ghjr.onrender.com",
         "EXPO_PUBLIC_AGORA_APP_ID": "d4a3ee9b40a04436a1bc8743190a4183"
       }
     }
