@@ -16,7 +16,7 @@
     "render-build": "npm install --legacy-peer-deps && npx prisma generate && npm run build"
   },
   "dependencies": {
-    "@better-auth/infra": "^0.2.4",
+    "@better-auth/infra": "^0.2.5",
     "@prisma/client": "^5.15.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.8.1",

@@ -64,6 +64,8 @@ export const auth = betterAuth({
         },
     },
     plugins: [
-        dash(),
+        dash({
+            apiKey: config.betterAuthApiKey
+        }),
     ],
 });

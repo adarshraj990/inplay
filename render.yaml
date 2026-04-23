@@ -27,3 +27,9 @@ services:
         value: "*"
       - key: CORS_ORIGINS
         value: "*"
+      - key: BETTER_AUTH_SECRET
+        sync: false
+      - key: BETTER_AUTH_URL
+        value: https://indplay-backend-v3.onrender.com/api/auth
+      - key: BETTER_AUTH_API_KEY
+        sync: false

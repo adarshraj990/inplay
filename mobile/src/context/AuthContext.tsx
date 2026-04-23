@@ -3,19 +3,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Keychain from 'react-native-keychain';
 
 // ─── Simple Import ──────────────────────────────────────────────────────────
-import BetterAuthReact from 'better-auth/react';
+import { createAuthClient } from 'better-auth/react';
+import { CONFIG } from '../config';
 
-// Use simple creation with requested trailing slash
-const AUTH_URL = 'https://indplay-backend-v3.onrender.com/';
+// Use centralized config for authentication
+const AUTH_URL = CONFIG.AUTH_BASE_URL;
 
 let authClient: any;
 let isInitialized = false;
 
 try {
-  const factory = (BetterAuthReact as any).createAuthClient || (BetterAuthReact as any).default?.createAuthClient;
-  if (typeof factory !== 'function') throw new Error('BetterAuth factory not found');
-  
-  authClient = factory({
+  authClient = createAuthClient({
     baseURL: AUTH_URL,
     storage: {
       async getItem(key: string) {
@@ -48,8 +46,13 @@ try {
     },
   });
   isInitialized = true;
-} catch (e) {
+} catch (e: any) {
   console.warn('[Auth] Initialization failed:', e);
+  console.error('[Auth] Error Details:', {
+    message: e.message,
+    stack: e.stack,
+    url: AUTH_URL
+  });
   // Robust fallback to prevent "cannot read property email of undefined"
   authClient = {
     useSession: () => ({ data: null, isPending: false }),

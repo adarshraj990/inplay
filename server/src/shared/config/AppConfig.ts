@@ -40,9 +40,16 @@ export class AppConfig {
     this.agoraAppId = process.env.AGORA_APP_ID ?? 'PLACEHOLDER_APP_ID';
     this.agoraAppCertificate = process.env.AGORA_APP_CERTIFICATE ?? 'PLACEHOLDER_CERTIFICATE';
     this.betterAuthSecret = this.require('BETTER_AUTH_SECRET');
-    this.betterAuthUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:5000';
+    this.betterAuthUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:5000/api/auth';
     this.resendApiKey = this.require('RESEND_API_KEY');
     this.betterAuthApiKey = process.env.BETTER_AUTH_API_KEY ?? '';
+
+    if (this.isProduction && !this.betterAuthApiKey) {
+      console.warn('\n[WARNING] BETTER_AUTH_API_KEY is not set. The Better-Auth dashboard may not function correctly.');
+      console.warn('Please ensure this is set on Render.com environment settings.\n');
+    }
+
+    console.log(`[Config] Better-Auth URL: ${this.betterAuthUrl}`);
   }
 
   static getInstance(): AppConfig {
@@ -56,8 +63,8 @@ export class AppConfig {
     const value = process.env[key];
     if (!value) {
       console.warn(`\n[CRITICAL WARNING] Missing environment variable: ${key}`);
-      console.warn(`Please add ${key} to your Render Environment settings to ensure the app works correctly.\n`);
-      return ''; // Return empty string to allow startup
+      console.warn(`Please add ${key} to your environment settings (Render.com) to ensure the app works correctly.\n`);
+      return ''; 
     }
     return value;
   }

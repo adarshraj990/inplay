@@ -118,7 +118,7 @@ export function createApp(): Application {
   app.use('/api/messages', messagesRouter);
 
   // ── Better-Auth Integration ──────────────────────────
-  app.all('/api/auth/*', toNodeHandler(auth));
+  app.use('/api/auth', (req, res) => toNodeHandler(auth)(req, res));
 
   // ── 404 Handler ──────────────────────────────────────
   app.use((_req: Request, res: Response) => {
