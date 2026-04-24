@@ -20,7 +20,7 @@ export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
-    secret: config.betterAuthSecret,
+    secret: process.env.BETTER_AUTH_SECRET || config.betterAuthSecret,
     baseURL: 'https://indplay-backend-v3-ghjr.onrender.com/api/auth/',
     emailAndPassword: {
         enabled: true,
@@ -67,7 +67,7 @@ export const auth = betterAuth({
     plugins: [
         admin(),
         dash({
-            apiKey: config.betterAuthApiKey
+            apiKey: process.env.BETTER_AUTH_API_KEY || config.betterAuthApiKey
         }),
     ],
 });
