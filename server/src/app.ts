@@ -40,7 +40,10 @@ export function createApp(): Application {
     crossOriginEmbedderPolicy: false,
   }));
 
-  app.use(cors());
+  app.use(cors({
+    origin: true,
+    credentials: true,
+  }));
 
   // ── Performance Middlewares ──────────────────────────
   app.use(compression());
