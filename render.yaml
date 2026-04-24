@@ -30,6 +30,6 @@ services:
       - key: BETTER_AUTH_SECRET
         sync: false
       - key: BETTER_AUTH_URL
-        value: https://indplay-backend-v3-ghjr.onrender.com/api/auth
+        value: https://indplay-backend-v3-ghjr.onrender.com/api/auth/
       - key: BETTER_AUTH_API_KEY
         sync: false
