@@ -5,14 +5,11 @@ import { dash } from "@better-auth/infra";
 import { admin } from "better-auth/plugins";
 import { DatabaseService } from "../infrastructure/database/DatabaseService.js";
 import { AppConfig } from "../shared/config/AppConfig.js";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../infrastructure/database/prisma.js";
 
 const config = AppConfig.getInstance();
 
-// We need a stable Prisma client for the adapter. 
-// Since DatabaseService initializes it asynchronously, we provide a raw client to the adapter
-// or reuse the one from the service if we can ensure it exists.
-const prisma = new PrismaClient();
+// We use the central Prisma singleton to prevent connection pool exhaustion.
 
 const resend = new Resend(config.resendApiKey);
 

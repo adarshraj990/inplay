@@ -1,5 +1,5 @@
 // src/infrastructure/database/DatabaseService.ts — Prisma singleton
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './prisma.js';
 import { AppConfig } from "../../shared/config/AppConfig.js";
 import { Logger } from "../../shared/utils/Logger.js";
 
@@ -7,7 +7,6 @@ const logger = Logger.getInstance();
 
 export class DatabaseService {
   private static instance: DatabaseService;
-  private _client: PrismaClient | null = null;
   private _isConnected = false;
 
   private constructor() {}
@@ -20,10 +19,7 @@ export class DatabaseService {
   }
 
   get client(): PrismaClient {
-    if (!this._client) {
-      throw new Error('Database client not initialized. Call connect() first.');
-    }
-    return this._client;
+    return prisma;
   }
 
   get isConnected(): boolean {
@@ -31,22 +27,11 @@ export class DatabaseService {
   }
 
   async connect(): Promise<void> {
-    const config = AppConfig.getInstance();
-
     try {
-      this._client = new PrismaClient({
-        datasources: {
-          db: {
-            url: config.databaseUrl,
-          },
-        },
-        log: config.isDevelopment ? ['query', 'info', 'warn', 'error'] : ['error'],
-      });
-
-      await this._client.$connect();
+      await prisma.$connect();
       this._isConnected = true;
-      logger.info('✅ Database connected via Prisma (PostgreSQL)');
-    } catch (error: any) { // Explicitly any or handle correctly (Prisma errors can be complex)
+      logger.info('✅ Database connected via Prisma singleton (PostgreSQL)');
+    } catch (error: any) {
       logger.error('❌ Database connection error:', error);
       this._isConnected = false;
       throw error;
