@@ -21,7 +21,7 @@ export const auth = betterAuth({
         provider: "postgresql",
     }),
     secret: config.betterAuthSecret,
-    baseURL: config.betterAuthUrl,
+    baseURL: 'https://indplay-backend-v3-ghjr.onrender.com/api/auth/',
     emailAndPassword: {
         enabled: true,
     },
