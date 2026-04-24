@@ -1,7 +1,6 @@
 // src/infrastructure/database/DatabaseService.ts — Prisma singleton
 import { prisma } from './prisma.js';
 import { PrismaClient } from '@prisma/client';
-import { AppConfig } from "../../shared/config/AppConfig.js";
 import { Logger } from "../../shared/utils/Logger.js";
 
 const logger = Logger.getInstance();
@@ -40,9 +39,13 @@ export class DatabaseService {
   }
 
   async disconnect(): Promise<void> {
-    await prisma.$disconnect();
-    this._isConnected = false;
-    logger.info('🔌 Database disconnected');
+    try {
+      await prisma.$disconnect();
+      this._isConnected = false;
+      logger.info('🔌 Database disconnected');
+    } catch (error) {
+      logger.error('Error during database disconnect:', error);
+    }
   }
 
   async healthCheck(): Promise<boolean> {
@@ -50,7 +53,8 @@ export class DatabaseService {
       if (!this._isConnected) return false;
       await prisma.$queryRaw`SELECT 1`;
       return true;
-    } catch {
+    } catch (error) {
+      logger.warn('Database health check failed:', error);
       return false;
     }
   }
