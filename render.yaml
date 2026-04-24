@@ -24,9 +24,9 @@ services:
       - key: AGORA_APP_CERTIFICATE
         sync: false
       - key: SOCKET_CORS_ORIGIN
-        value: "*"
+        value: "https://inplay-gamma.vercel.app,http://localhost:3001"
       - key: CORS_ORIGINS
-        value: "*"
+        value: "https://inplay-gamma.vercel.app,http://localhost:3001"
       - key: BETTER_AUTH_SECRET
         sync: false
       - key: BETTER_AUTH_URL

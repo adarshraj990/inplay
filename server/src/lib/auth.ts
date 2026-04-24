@@ -18,7 +18,12 @@ export const auth = betterAuth({
         provider: "postgresql",
     }),
     secret: process.env.BETTER_AUTH_SECRET || config.betterAuthSecret,
-    baseURL: 'https://indplay-backend-v3-ghjr.onrender.com/api/auth/',
+    baseURL: config.betterAuthUrl || 'https://indplay-backend-v3-ghjr.onrender.com/api/auth/',
+    trustedOrigins: [
+        'https://inplay-gamma.vercel.app',
+        'http://localhost:3001',
+        'http://localhost:5173', // Common Vite port
+    ],
     emailAndPassword: {
         enabled: true,
     },
