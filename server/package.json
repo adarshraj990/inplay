@@ -6,14 +6,16 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "npx prisma generate && npx prisma db push --accept-data-loss && tsc",
+    "build": "tsc",
+    "prisma:generate": "npx prisma generate",
+    "prisma:push": "npx prisma db push --accept-data-loss",
     "start": "node dist/index.js",
     "analyze": "tsc --noEmit && npm run lint",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write 'src/**/*.ts'",
-    "render-build": "npm install --legacy-peer-deps && npx prisma generate && npm run build"
+    "render-build": "npm install --legacy-peer-deps && npm run prisma:generate && npm run prisma:push && npm run build"
   },
   "dependencies": {
     "@better-auth/infra": "^0.2.5",
