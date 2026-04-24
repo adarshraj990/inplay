@@ -90,6 +90,11 @@ export function createApp(): Application {
     });
   });
 
+  // ── Keep-Awake Ping ──────────────────────────────────
+  app.get('/ping', (_req: Request, res: Response) => {
+    res.send('pong');
+  });
+
   const syncStatusController = new SyncStatusController();
   app.get('/health/sync', (req, res) => syncStatusController.getSyncStatus(req, res));
 

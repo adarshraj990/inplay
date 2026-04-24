@@ -42,12 +42,9 @@ export class AppConfig {
     this.betterAuthSecret = this.require('BETTER_AUTH_SECRET');
     this.betterAuthUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:5000/api/auth';
     this.resendApiKey = this.require('RESEND_API_KEY');
-    this.betterAuthApiKey = process.env.BETTER_AUTH_API_KEY ?? '';
+    this.betterAuthApiKey = this.require('BETTER_AUTH_API_KEY');
 
-    if (this.isProduction && !this.betterAuthApiKey) {
-      console.warn('\n[WARNING] BETTER_AUTH_API_KEY is not set. The Better-Auth dashboard may not function correctly.');
-      console.warn('Please ensure this is set on Render.com environment settings.\n');
-    } else if (this.betterAuthApiKey) {
+    if (this.betterAuthApiKey) {
       console.log(`[Config] Better-Auth API Key loaded: ${this.betterAuthApiKey.substring(0, 6)}...`);
     }
 

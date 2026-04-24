@@ -4,6 +4,7 @@ import * as Keychain from 'react-native-keychain';
 
 // ─── Simple Import ──────────────────────────────────────────────────────────
 import { createAuthClient } from 'better-auth/react';
+import { adminClient } from 'better-auth/client/plugins';
 import { CONFIG } from '../config';
 
 // Use centralized config for authentication
@@ -44,6 +45,9 @@ try {
         } catch {}
       },
     },
+    plugins: [
+      adminClient()
+    ]
   });
   isInitialized = true;
 } catch (e: any) {

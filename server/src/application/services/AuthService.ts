@@ -101,6 +101,7 @@ export class AuthService {
       bio: user.bio,
       status: user.status,
       level: user.level,
+      role: user.role,
     };
 
     return {

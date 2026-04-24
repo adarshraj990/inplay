@@ -60,6 +60,7 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  role          String?
 
   // ── Indiplay Custom Fields ──────────────────────
   gameUid           String     @unique

@@ -59,6 +59,23 @@ async function bootstrap(): Promise<void> {
           }
         }, 5 * 60 * 1000); // 5 minutes
       }
+
+      // ── Self-Ping Keep-Awake Service (Production Only) ───
+      if (config.nodeEnv === 'production') {
+        const PING_URL = 'https://indplay-backend-v3-ghjr.onrender.com/ping';
+        setInterval(async () => {
+          try {
+            const response = await fetch(PING_URL);
+            if (response.ok) {
+              logger.info('🛰️  Self-ping sent to stay awake: pong');
+            } else {
+              logger.warn(`🛰️  Self-ping failed with status: ${response.status}`);
+            }
+          } catch (e) {
+            logger.error('🛰️  Self-ping error:', e);
+          }
+        }, 5 * 60 * 1000); // 5 minutes
+      }
     });
 
     // ── Graceful Shutdown ────────────────────────────────
