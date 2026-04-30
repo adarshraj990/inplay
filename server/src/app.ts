@@ -59,6 +59,9 @@ export function createApp(): Application {
   });
   app.use('/api/', limiter);
 
+  // ── Better-Auth Integration (MOVED ABOVE BODY PARSERS) ──────────
+  app.use('/api/auth', (req, res) => toNodeHandler(auth)(req, res));
+
   // ── Request Parsing ──────────────────────────────────
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -126,8 +129,6 @@ export function createApp(): Application {
   app.use('/api/social', socialRouter);
   app.use('/api/messages', messagesRouter);
 
-  // ── Better-Auth Integration ──────────────────────────
-  app.use('/api/auth', (req, res) => toNodeHandler(auth)(req, res));
 
   // ── 404 Handler ──────────────────────────────────────
   app.use((_req: Request, res: Response) => {

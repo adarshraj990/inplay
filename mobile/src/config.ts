@@ -4,7 +4,7 @@
 
 // Use EXPO_PUBLIC_ prefix for variables to be available in the app
 // Defaults to the production Render URL if not specified
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://indplay-backend-v3-ghjr.onrender.com';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://indplay-backend-v3-ac9j.onrender.com';
 
 // Ensure the URL ends correctly for different uses
 export const API_BASE_URL = BASE_URL.endsWith('/api/v1') ? BASE_URL : `${BASE_URL}/api/v1`;
