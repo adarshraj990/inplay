@@ -19,6 +19,10 @@ export const auth = betterAuth({
     }),
     secret: process.env.BETTER_AUTH_SECRET || config.betterAuthSecret,
     baseURL: config.betterAuthUrl || 'https://indplay-backend-v3-ac9j.onrender.com/api/auth/',
+    logger: {
+        level: "debug",
+        enabled: true,
+    },
     trustedOrigins: [
         'https://inplay-gamma.vercel.app',
         'http://localhost:3001',

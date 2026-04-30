@@ -8,7 +8,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://indplay-backend-v3-
 
 // Ensure the URL ends correctly for different uses
 export const API_BASE_URL = BASE_URL.endsWith('/api/v1') ? BASE_URL : `${BASE_URL}/api/v1`;
-export const AUTH_BASE_URL = `${BASE_URL}/api/auth`;
+export const AUTH_BASE_URL = `${BASE_URL}/api/auth/`;
 export const SOCKET_URL = BASE_URL.replace('/api/v1', '');
 
 export const CONFIG = {
