@@ -26,6 +26,7 @@ import rewardRouter from "./presentation/http/routes/reward.routes.js";
 import { reportRouter } from "./presentation/http/routes/report.routes.js";
 import { StatsController } from "./presentation/http/controllers/StatsController.js";
 import { SyncStatusController } from "./presentation/http/controllers/SyncStatusController.js";
+import { DatabaseService } from "./infrastructure/database/DatabaseService.js";
 
 const logger = Logger.getInstance();
 
@@ -81,7 +82,7 @@ export function createApp(): Application {
   // ── Health Check ─────────────────────────────────────
   app.get('/health', async (_req: Request, res: Response) => {
     const config = AppConfig.getInstance();
-    const db = require('./infrastructure/database/DatabaseService').DatabaseService.getInstance();
+    const db = DatabaseService.getInstance();
     const isDbConnected = db.isConnected;
 
     res.json({
