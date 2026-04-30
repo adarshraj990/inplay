@@ -60,7 +60,8 @@ export function createApp(): Application {
   app.use('/api/', limiter);
 
   // ── Better-Auth Integration (MOVED ABOVE BODY PARSERS) ──────────
-  app.use('/api/auth', (req, res) => toNodeHandler(auth)(req, res));
+  app.all('/api/auth/*', (req, res) => toNodeHandler(auth)(req, res));
+  app.all('/api/auth', (req, res) => toNodeHandler(auth)(req, res));
 
   // ── Request Parsing ──────────────────────────────────
   app.use(express.json({ limit: '10mb' }));
